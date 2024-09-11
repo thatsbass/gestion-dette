@@ -50,8 +50,24 @@ class UserService
     }
 
 
+  
     public function getAllUsers()
     {
-        return $this->userRepository->getAll(); 
+        return $this->userRepository->getAllUsers();
+    }
+
+    public function getUsersByRole($role)
+    {
+        return $this->userRepository->getUsersByRole($role);
+    }
+
+    public function getUsersByRoleAndStatus($role, $active)
+    {
+        return $this->userRepository->getUsersByRoleAndStatus($role, $active);
+    }
+
+    public function getUsersByStatus($active)
+    {
+        return $this->userRepository->getUsersByStatus($active);
     }
 }

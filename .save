@@ -92,3 +92,44 @@ return new class extends Migration
         Schema::dropIfExists('articles');
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?php
+
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('article_dette', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('article_id')->constrained()->onDelete('cascade');
+            $table->foreignId('dette_id')->constrained()->onDelete('cascade');
+            $table->decimal('price', 10, 2);
+            $table->integer('quantity');
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('article_dette');
+    }
+}

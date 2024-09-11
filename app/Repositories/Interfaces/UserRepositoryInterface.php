@@ -10,5 +10,10 @@ interface UserRepositoryInterface
     public function findById(int $id): ?User;
     public function update(User $user, array $data): User;
     // public function delete(User $user): void;
-    public function getAll(); // Ajoutez cette ligne
+    public function getAllUsers(); 
+    public function getUsersByRole($role);
+    public function getUsersByRoleAndStatus($role, $active);
+    public function getUsersByStatus($active);
+    
+
 }

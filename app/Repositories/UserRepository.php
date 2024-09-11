@@ -30,8 +30,30 @@ class UserRepository implements UserRepositoryInterface
     //     $user->delete();
     // }
 
-    public function getAll()
+    public function getAllUsers()
     {
-        return User::all();
+        return User::with('role')->get();  // Charge aussi le rôle
+    }
+
+    public function getUsersByRole($roleName)
+    {
+        return User::whereHas('role', function ($query) use ($roleName) {
+            $query->where('name', $roleName);
+        })->get();
+    }
+
+    public function getUsersByRoleAndStatus($roleName, $active)
+    {
+        $active = ($active === 'oui') ? 1 : 0;
+        return User::where('is_active', $active)
+            ->whereHas('role', function ($query) use ($roleName) {
+                $query->where('name', $roleName);
+            })->get();
+    }
+
+    public function getUsersByStatus($active)
+    {
+        $active = ($active === 'oui') ? 1 : 0;
+        return User::where('is_active', $active)->get();
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use App\Services\PhotoService;
 use App\Services\UserService;
 use App\Http\Requests\CreateClientUserRequest;
+use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
@@ -69,11 +70,46 @@ class ClientController extends Controller
         return response()->json(new ClientResource($client), 200);
     }
 
-
-    public function index(): JsonResponse
+    // Récupérer tous les clients avec des filtres optionnels
+    public function index(Request $request): JsonResponse
     {
-        $clients = $this->clientService->getAllClients();
+        $hasAccount = $request->query('comptes'); // oui | non
+        $isActive = $request->query('active'); // oui | non
 
-        return response()->json(new ClientCollection($clients), 200);
+        if ($hasAccount) {
+            $clients = $this->clientService->getClientsByAccountStatus($hasAccount);
+        } elseif ($isActive) {
+            $clients = $this->clientService->getClientsByActiveStatus($isActive);
+        } else {
+            $clients = $this->clientService->getAllClients();
+        }
+
+        return response()->json([
+            'status' => 200,
+            'data' => $clients->isEmpty() ? null : new ClientCollection($clients),
+            'message' => $clients->isEmpty() ? 'Pas de clients trouvés' : 'Liste des clients'
+        ], 200);
     }
+
+    // Recherche client par téléphone
+    public function findByTelephone(Request $request): JsonResponse
+    {
+        $telephone = $request->input('telephone');
+        $client = $this->clientService->findByTelephone($telephone);
+
+        if ($client) {
+            return response()->json([
+                'status' => 200,
+                'data' => new ClientResource($client),
+                'message' => 'Client trouvé'
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 411,
+            'data' => null,
+            'message' => 'Client non trouvé'
+        ], 411);
+    }
+    
 }

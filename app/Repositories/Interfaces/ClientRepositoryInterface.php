@@ -11,4 +11,10 @@ interface ClientRepositoryInterface
     public function update(Client $client, array $data): Client;
     public function getAll();
 
+    public function getClientsByAccountStatus(bool $hasAccount);
+
+    public function getClientsByActiveStatus(bool $isActive);
+
+    public function findByTelephone(string $telephone);
+
 }

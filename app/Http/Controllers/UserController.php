@@ -8,6 +8,8 @@ use App\Http\Resources\UserCollection;
 use App\Services\UserService;
 use App\Services\PhotoService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
 
 class UserController extends Controller
 {
@@ -43,10 +45,31 @@ class UserController extends Controller
         return response()->json(new UserResource($user), 200);
     }
 
-    public function index(): JsonResponse
-    {
-        $users = $this->userService->getAllUsers();
+    // public function index(): JsonResponse
+    // {
+    //     $users = $this->userService->getAllUsers();
 
-        return response()->json(new UserCollection($users), 200);
+    //     return response()->json(new UserCollection($users), 200);
+    // }
+    public function index(Request $request): JsonResponse
+    {
+        $role = $request->query('role');
+        $active = $request->query('active');
+
+        if ($role && $active) {
+            $users = $this->userService->getUsersByRoleAndStatus($role, $active);
+        } elseif ($role) {
+            $users = $this->userService->getUsersByRole($role);
+        } elseif ($active) {
+            $users = $this->userService->getUsersByStatus($active);
+        } else {
+            $users = $this->userService->getAllUsers();
+        }
+
+        return response()->json([
+            'status' => 200,
+            'data' => $users->isEmpty() ? null : $users,
+            'message' => $users->isEmpty() ? 'Aucun utilisateur trouvé' : 'Liste des utilisateurs'
+        ], 200);
     }
 }

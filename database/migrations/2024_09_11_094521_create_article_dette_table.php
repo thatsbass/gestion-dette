@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('article_dettes', function (Blueprint $table) {
+        Schema::create('article_dette', function (Blueprint $table) {
             $table->id();
             $table->foreignId('article_id')->constrained()->onDelete('cascade');
             $table->foreignId('dette_id')->constrained()->onDelete('cascade');
-            $table->decimal('price', 8, 2); 
-            $table->integer('quantity');
+            $table->integer('quantity'); // Quantité vendue
+            $table->decimal('price', 8, 2); // Prix de vente
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('article_dettes');
+        Schema::dropIfExists('article_dette');
     }
 };

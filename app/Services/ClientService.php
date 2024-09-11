@@ -38,11 +38,31 @@ class ClientService
         return $this->clientRepository->update($client, $data);
     }
 
+// Récupérer tous les clients
+public function getAllClients()
+{
+    return $this->clientRepository->getAll();
+}
 
-    public function getAllClients()
-    {
-        return $this->clientRepository->getAll();
-    }
+// Filtrer les clients qui ont ou non un compte utilisateur associé
+public function getClientsByAccountStatus(string $hasAccount)
+{
+    $hasAccount = ($hasAccount === 'oui') ? true : false;
+    return $this->clientRepository->getClientsByAccountStatus($hasAccount);
+}
+
+// Filtrer les clients par statut actif ou inactif
+public function getClientsByActiveStatus(string $isActive)
+{
+    $isActive = ($isActive === 'oui') ? true : false;
+    return $this->clientRepository->getClientsByActiveStatus($isActive);
+}
+
+// Rechercher un client par téléphone
+public function findByTelephone(string $telephone)
+{
+    return $this->clientRepository->findByTelephone($telephone);
+}
 
  
 }

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('montant', 10, 2); 
             $table->date('date');
             $table->foreignId('dette_id')->constrained('dettes')->onDelete('cascade'); 
-            $table->foreignId('client_id')->constrained('client')->onDelete('cascade'); 
+            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade'); 
             $table->timestamps();
             $table->softDeletes();
         });

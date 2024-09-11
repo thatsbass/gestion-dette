@@ -27,7 +27,7 @@ class StoreUserRequest extends FormRequest
             'login' => 'required|string|unique:users,login|max:255',
             'password' => 'required|string|min:8',
             'photo' => 'nullable|image',
-            'photo_status' => 'nullable|in:valid,invalid',
+            'photo_status' => 'nullable|in:success,failed',
             'role_id' => 'required|exists:roles,id',
         ];
     }
