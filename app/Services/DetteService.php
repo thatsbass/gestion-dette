@@ -73,7 +73,7 @@ class DetteService
         if (!$dette) {
             throw new Exception('Dette not found');
         }
-
+    
         $montantRestant = $dette->montant - $dette->paiements->sum('montant');
         if ($montant <= $montantRestant) {
             $paiement = $this->paiementRepository->create([
@@ -82,6 +82,8 @@ class DetteService
                 'dette_id' => $detteId,
                 'client_id' => $dette->client_id,
             ]);
+    
+            $dette->load('paiements'); 
             return $dette;
         } else {
             throw new Exception('Payment amount exceeds remaining debt');

@@ -53,8 +53,8 @@ Route::prefix('dettes')->group(function () {
     Route::get('/', [DetteController::class, 'index']);
     Route::get('/{id}', [DetteController::class, 'show']);
     Route::post('/{id}/paiements', [DetteController::class, 'addPayment']);
-    Route::post('/{id}/articles', [DetteController::class, 'getArticles']);
-    Route::post('/{id}/paiements', [DetteController::class, 'getPayments']);
+    Route::get('/{id}/articles', [DetteController::class, 'getArticles']);
+    Route::get('/{id}/paiements', [DetteController::class, 'getPayments']);
 });
     Route::any('{segment}', function () {
         return response()->json([

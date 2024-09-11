@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class DetteResource extends JsonResource
+class PaiementResource extends JsonResource
 {
     /**
      * Transforme le modèle en tableau de données.
@@ -18,9 +18,8 @@ class DetteResource extends JsonResource
             'id' => $this->id,
             'montant' => $this->montant,
             'date' => $this->date,
+            'dette_id' => $this->dette_id,
             'client_id' => $this->client_id,
-            'paiements' => PaiementResource::collection($this->whenLoaded('paiements')),
-
         ];
     }
 }
