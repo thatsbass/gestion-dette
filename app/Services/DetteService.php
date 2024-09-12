@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Services;
 
@@ -31,6 +31,9 @@ class DetteService
                 foreach ($data['articles'] as $articleData) {
                     $article = Article::find($articleData['articleId']);
                     if ($article) {
+                        if($article->quantite < $articleData['qteVente']) {
+                            throw new Exception('Quantite insuffisante');
+                        }
                         $article->dettes()->attach($dette->id, [
                             'quantity' => $articleData['qteVente'],
                             'price' => $articleData['prixVente'],

@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DetteRepositoryInterface::class, DetteRepository::class);
         $this->app->bind(PaiementRepositoryInterface::class, PaiementRepository::class);
 
+
     }
 
     /**

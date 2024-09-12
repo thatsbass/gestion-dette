@@ -7,6 +7,12 @@ use App\Http\Controllers\DetteController;
 use Illuminate\Support\Facades\Route;
 
 
+use App\Services\MongoDBService;
+
+Route::get("/test", function () {
+    dd(env('ARCHIVING_DRIVER'));
+});
+
 Route::group(['prefix' => 'v1'], function () { 
     // Authentification
     Route::post('login', [AuthController::class, 'login']);

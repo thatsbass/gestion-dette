@@ -43,6 +43,19 @@ return [
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
+            'mongodb' => [
+            'driver'   => 'mongodb',
+            'dsn'      => env('MONGO_DB_URI'),  
+            'database' => env('MONGO_DB_DATABASE'),
+        ],
+
+        'firebase' => [
+            'credentials' => env('FIREBASE_CREDENTIALS'),
+            'database_url' => env('FIREBASE_DATABASE_URL'),
+        ],
+
+
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),

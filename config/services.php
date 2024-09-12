@@ -13,6 +13,9 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    // 'firebase' => [
+    // 'credentials' => storage_path(env('FIREBASE_CREDENTIALS')),
+    // ],
 
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
