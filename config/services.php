@@ -2,21 +2,17 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Third Party Services
-    |--------------------------------------------------------------------------
-    |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
-    |
-    */
-    // 'firebase' => [
-    // 'credentials' => storage_path(env('FIREBASE_CREDENTIALS')),
-    // ],
+    'vonage' => [
+    'api_key' => env('VONAGE_API_KEY'),
+    'api_secret' => env('VONAGE_API_SECRET'),
+    'from' => env('VONAGE_FROM'),
+    ],
 
+    'twilio' => [
+    'sid' => env('TWILIO_SID'),
+    'auth_token' => env('TWILIO_AUTH_TOKEN'),
+    'phone_number' => env('TWILIO_PHONE_NUMBER'),
+    ],
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),

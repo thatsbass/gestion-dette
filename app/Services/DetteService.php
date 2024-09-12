@@ -32,7 +32,7 @@ class DetteService
                     $article = Article::find($articleData['articleId']);
                     if ($article) {
                         if($article->quantite < $articleData['qteVente']) {
-                            throw new Exception('Quantite insuffisante');
+                            throw new Exception('Oups!, la quantite d\'article est insuffisante');
                         }
                         $article->dettes()->attach($dette->id, [
                             'quantity' => $articleData['qteVente'],
@@ -110,5 +110,19 @@ class DetteService
     public function getPaymentsByDette(int $id)
     {
         return $this->paiementRepository->getByDette($id);
+    }
+
+    public function getTotalDueByClient()
+    {
+       
+        $dettes = $this->getDettesByStatus('NonSolde');
+        
+        $totalDue = $dettes->groupBy('client_id')->map(function ($dettes) {
+            return $dettes->sum(function ($dette) {
+                return $dette->montant - $dette->paiements->sum('montant');
+            });
+        });
+
+        return $totalDue;
     }
 }

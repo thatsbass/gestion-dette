@@ -174,6 +174,7 @@ return [
         Barryvdh\DomPDF\ServiceProvider::class,
         Kreait\Laravel\Firebase\ServiceProvider::class,
         App\Providers\ArchiveServiceProvider::class,
+        App\Providers\SmsServiceProvider::class,
     ])->toArray(),
 
     /*

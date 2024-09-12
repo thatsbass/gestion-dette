@@ -2,23 +2,22 @@
 
 namespace App\Console;
 
+
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Jobs\ArchiveDettesJob;
+// use App\Jobs\ArchiveDettesJob;
+use App\Jobs\SendMessageJob;
 
 class Kernel extends ConsoleKernel
 {
 
         protected function schedule(Schedule $schedule)
         {
-            $schedule->job(new ArchiveDettesJob)->everyMinute();   
+            $schedule->job(new SendMessageJob())->everyMinute();
+            
         }
-        
-    
 
-
-    
-
+       
 
     protected function commands(): void
     {
