@@ -1,37 +1,24 @@
 <?php
-
 namespace App\Services\Messaging;
 
-use Twilio\Rest\Client as TwilioClient;
-use Log;
+use Twilio\Rest\Client;
 
 class TwilioService implements MessagingServiceInterface
 {
     protected $client;
+    protected $from;
 
-    public function __construct()
+    public function __construct($sid, $authToken, $from)
     {
-        $this->client = new TwilioClient(env("TWILIO_ACCOUNT_SID"), env("TWILIO_AUTH_TOKEN"));
+        $this->client = new Client($sid, $authToken);
+        $this->from = $from;
     }
 
-    public function sendMessage( $to, $message)
-{
-    try {
-        $messaging = $message;
-        $toClient = $to;
-        Log::info("Sending SMS to " . $toClient . " with message " . $messaging); 
-        $this->client->messages->create(
-            $to,
-            [
-                'from' => env('TWILIO_PHONE'), 
-                'body' => $message,
-            ]
-        );
-    } catch (\Exception $e) {
-        Log::error($e->getMessage());
-        throw $e;
+    public function sendMessage(string $phoneNumber, string $message)
+    {
+        $this->client->messages->create($phoneNumber, [
+            'from' => $this->from,
+            'body' => $message
+        ]);
     }
 }
-
-}
-

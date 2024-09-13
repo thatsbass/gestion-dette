@@ -4,5 +4,5 @@ namespace App\Services\Messaging;
 
 interface MessagingServiceInterface
 {
-    public function sendMessage( $to, $message);
+    public function sendMessage(string $phoneNumber, string $message);
 }

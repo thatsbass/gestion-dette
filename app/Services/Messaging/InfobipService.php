@@ -1,28 +1,34 @@
 <?php
-
 namespace App\Services\Messaging;
 
-use GuzzleHttp\Client;
+// use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Http;
+use Log;
 
 class InfobipService implements MessagingServiceInterface
 {
-    protected $client;
+    protected $apiKey;
+    protected $apiUrl;
 
-    public function __construct()
+    public function __construct($apiKey, $apiUrl)
     {
-        $this->client = new Client();
+        $this->apiKey = $apiKey;
+        $this->apiUrl = $apiUrl;
     }
 
-    public function sendMessage( $to, $message)
+    public function sendMessage(string $phoneNumber, string $message)
     {
-        $this->client->post('https://infobip-api-url', [
-            'json' => [
-                'to' => $to,
-                'text' => $message
-            ],
-            'headers' => [
-                'Authorization' => 'App ' . env('INFOBIP_API_KEY')
-            ]
+        $response = Http::withHeaders([
+            'Authorization' => "App {$this->apiKey}",
+            'Content-Type' => 'application/json',
+        ])->post("{$this->apiUrl}/sms/2/text/single", [
+            'from' => 'Jawen',
+            'to' => $phoneNumber,
+            'text' => $message,
         ]);
+
+        return $response->successful();
     }
+
+
 }

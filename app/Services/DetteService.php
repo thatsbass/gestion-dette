@@ -9,6 +9,7 @@ use App\Models\Article;
 use App\Models\Paiement;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Log;
 
 class DetteService
 {
@@ -26,7 +27,6 @@ class DetteService
         return DB::transaction(function () use ($data) {
             $dette = $this->detteRepository->create($data);
             
-            // Attach articles to the dette
             if (isset($data['articles'])) {
                 foreach ($data['articles'] as $articleData) {
                     $article = Article::find($articleData['articleId']);
@@ -65,16 +65,13 @@ class DetteService
         return $this->detteRepository->getAll();
     }
 
-    public function getDettesByStatus($status)
-    {
-        return $this->detteRepository->getByStatus($status);
-    }
+  
 
     public function addPayment(int $detteId, float $montant)
     {
         $dette = $this->detteRepository->findById($detteId);
         if (!$dette) {
-            throw new Exception('Dette not found');
+            throw new Exception('Aucune dette correspondant');
         }
     
         $montantRestant = $dette->montant - $dette->paiements->sum('montant');
@@ -89,7 +86,7 @@ class DetteService
             $dette->load('paiements'); 
             return $dette;
         } else {
-            throw new Exception('Payment amount exceeds remaining debt');
+            throw new Exception('Le montant ne doit pas depasser le montant restant, le montant due est ' . $montantRestant);
         }
     }
 
@@ -102,7 +99,7 @@ class DetteService
     {
         $dette = $this->detteRepository->findById($id);
         if (!$dette) {
-            throw new Exception('Dette not found');
+            throw new Exception('Aucune dette correspondant');
         }
         return $dette->articles;
     }
@@ -112,9 +109,12 @@ class DetteService
         return $this->paiementRepository->getByDette($id);
     }
 
+    public function getDettesByStatus($status)
+    {
+        return $this->detteRepository->getByStatus($status);
+    }
     public function getTotalDueByClient()
     {
-       
         $dettes = $this->getDettesByStatus('NonSolde');
         
         $totalDue = $dettes->groupBy('client_id')->map(function ($dettes) {
@@ -122,7 +122,8 @@ class DetteService
                 return $dette->montant - $dette->paiements->sum('montant');
             });
         });
-
+        Log::info("Total Due: " . json_encode($totalDue));
+    
         return $totalDue;
     }
 }

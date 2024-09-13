@@ -19,21 +19,18 @@ class SendMessageJob implements ShouldQueue
     {
         $detteService = app(DetteService::class);
         $messageService = app(MessagingServiceInterface::class);
-        try {
-        $totalDueByClient = $detteService->getTotalDueByClient();
-        log::info("". $totalDueByClient ."");
-        
-        foreach ($totalDueByClient as $clientId => $totalDue) {
-            
-            $client = Client::find($clientId);
-            
-            if ($client) {
-                $message = "Montant total dû : " . $totalDue;
-                $messageService->sendMessage($client->telephone, $message);
+            $totalDueByClient = $detteService->getTotalDueByClient()->toArray();
+
+            foreach ($totalDueByClient as $clientId => $totalDue) {
+                $client = Client::find($clientId);
+                if ($client) {
+                    $message = "Cher(e) {$client->surnom}, vous devez un montant total de {$totalDue} CFA. Veuillez régler votre dette. Merci";
+                    try {
+                        $messageService->sendMessage($client->telephone, $message);
+                    } catch (\Exception $e) {
+                        Log::error('Error while sending message to ' . $client->telephone . ': ' . $e->getMessage());
+                    }
+                }
             }
-        }
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-        }
-}
+    }
 }
