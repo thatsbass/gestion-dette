@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Services;
 
@@ -9,6 +9,7 @@ use App\Models\Article;
 use App\Models\Paiement;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Log;
 
 class DetteService
 {
@@ -26,11 +27,13 @@ class DetteService
         return DB::transaction(function () use ($data) {
             $dette = $this->detteRepository->create($data);
             
-            // Attach articles to the dette
             if (isset($data['articles'])) {
                 foreach ($data['articles'] as $articleData) {
                     $article = Article::find($articleData['articleId']);
                     if ($article) {
+                        if($article->quantite < $articleData['qteVente']) {
+                            throw new Exception('Oups!, la quantite d\'article est insuffisante');
+                        }
                         $article->dettes()->attach($dette->id, [
                             'quantity' => $articleData['qteVente'],
                             'price' => $articleData['prixVente'],
@@ -62,18 +65,15 @@ class DetteService
         return $this->detteRepository->getAll();
     }
 
-    public function getDettesByStatus($status)
-    {
-        return $this->detteRepository->getByStatus($status);
-    }
+  
 
     public function addPayment(int $detteId, float $montant)
     {
         $dette = $this->detteRepository->findById($detteId);
         if (!$dette) {
-            throw new Exception('Dette not found');
+            throw new Exception('Aucune dette correspondant');
         }
-
+    
         $montantRestant = $dette->montant - $dette->paiements->sum('montant');
         if ($montant <= $montantRestant) {
             $paiement = $this->paiementRepository->create([
@@ -82,9 +82,11 @@ class DetteService
                 'dette_id' => $detteId,
                 'client_id' => $dette->client_id,
             ]);
+    
+            $dette->load('paiements'); 
             return $dette;
         } else {
-            throw new Exception('Payment amount exceeds remaining debt');
+            throw new Exception('Le montant ne doit pas depasser le montant restant, le montant due est ' . $montantRestant);
         }
     }
 
@@ -97,7 +99,7 @@ class DetteService
     {
         $dette = $this->detteRepository->findById($id);
         if (!$dette) {
-            throw new Exception('Dette not found');
+            throw new Exception('Aucune dette correspondant');
         }
         return $dette->articles;
     }
@@ -105,5 +107,23 @@ class DetteService
     public function getPaymentsByDette(int $id)
     {
         return $this->paiementRepository->getByDette($id);
+    }
+
+    public function getDettesByStatus($status)
+    {
+        return $this->detteRepository->getByStatus($status);
+    }
+    public function getTotalDueByClient()
+    {
+        $dettes = $this->getDettesByStatus('NonSolde');
+        
+        $totalDue = $dettes->groupBy('client_id')->map(function ($dettes) {
+            return $dettes->sum(function ($dette) {
+                return $dette->montant - $dette->paiements->sum('montant');
+            });
+        });
+        Log::info("Total Due: " . json_encode($totalDue));
+    
+        return $totalDue;
     }
 }

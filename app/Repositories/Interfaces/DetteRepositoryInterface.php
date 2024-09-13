@@ -10,4 +10,5 @@ interface DetteRepositoryInterface
     public function delete($dette);
     public function getAll();
     public function getByStatus($status);
+
 }

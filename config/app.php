@@ -171,7 +171,10 @@ return [
         // add your service providers here
         App\Providers\AuthTokenServiceProvider::class,
         CloudinaryLabs\CloudinaryLaravel\CloudinaryServiceProvider::class,
-        Barryvdh\DomPDF\ServiceProvider::class
+        Barryvdh\DomPDF\ServiceProvider::class,
+        Kreait\Laravel\Firebase\ServiceProvider::class,
+        App\Providers\ArchiveServiceProvider::class,
+        App\Providers\SmsServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -188,6 +191,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         'Cloudinary' => CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class,
         'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
+        'Firebase' => Kreait\Laravel\Firebase\Facades\Firebase::class,
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 

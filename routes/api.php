@@ -5,6 +5,19 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DetteController;
 use Illuminate\Support\Facades\Route;
+use App\Services\DetteService;
+
+
+use App\Services\MongoDBService;
+
+Route::get('/test', function (DetteService $detteService) {
+    return index($detteService);
+});
+
+function index(DetteService $detteService) {
+    $all_dette = $detteService->getTotalDueByClient()->toArray();
+    return $all_dette;
+}
 
 
 Route::group(['prefix' => 'v1'], function () { 
@@ -53,8 +66,8 @@ Route::prefix('dettes')->group(function () {
     Route::get('/', [DetteController::class, 'index']);
     Route::get('/{id}', [DetteController::class, 'show']);
     Route::post('/{id}/paiements', [DetteController::class, 'addPayment']);
-    Route::post('/{id}/articles', [DetteController::class, 'getArticles']);
-    Route::post('/{id}/paiements', [DetteController::class, 'getPayments']);
+    Route::get('/{id}/articles', [DetteController::class, 'getArticles']);
+    Route::get('/{id}/paiements', [DetteController::class, 'getPayments']);
 });
     Route::any('{segment}', function () {
         return response()->json([

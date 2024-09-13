@@ -9,7 +9,7 @@ class StoreDetteRequest extends FormRequest
     {
         return [
             'montant' => 'required|numeric|gt:0',
-            'clientId' => 'required|exists:clients,id',
+            'client_id' => 'required|exists:clients,id',
             'articles' => 'required|array|min:1',
             'articles.*.articleId' => 'required|exists:articles,id',
             'articles.*.qteVente' => 'required|numeric|min:1',

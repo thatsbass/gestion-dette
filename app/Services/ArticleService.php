@@ -40,44 +40,41 @@ class ArticleService implements ArticleServiceInterface
         $this->articleRepository->delete($id);
     }
     public function updateArticleStock($id, $qteStock)
-{
-    $article = $this->articleRepository->findById($id);
-    if ($article) {
-        $article->quantite = $qteStock;
-        $article->save();
-        return $article;
-    }
-    return null;
-}
-
-public function updateMultipleArticleStock(array $articles)
-{
-    $updated = [];
-    $errors = [];
-
-    foreach ($articles as $articleData) {
-        $article = $this->articleRepository->findById($articleData['id']);
+    {
+        $article = $this->articleRepository->findById($id);
         if ($article) {
-            $article->quantite = $articleData['qteStock'];
+            $article->quantite = $qteStock;
             $article->save();
-            $updated[] = $article;
-        } else {
-            $errors[] = $articleData['id'];
+            return $article;
         }
+        return null;
     }
 
-    return [
-        'success' => $updated,
-        'error' => $errors
-    ];
+    public function updateMultipleArticleStock(array $articles)
+    {
+        $updated = [];
+        $errors = [];
 
-    
-}
+        foreach ($articles as $articleData) {
+            $article = $this->articleRepository->findById($articleData['id']);
+            if ($article) {
+                $article->quantite += $articleData['qteStock'];
+                $article->save();
+                $updated[] = $article;
+            } else {
+
+                $errors[] = $articleData;
+            }
+        }
+        return [
+            'success' => $updated,
+            'error' => $errors
+        ];
+    }
 
 
-public function getArticleByLibelle($libelle)
-{
-    return $this->articleRepository->findByLibelle($libelle);
-}
-
+    public function getArticleByLibelle($libelle)
+    {
+        return $this->articleRepository->findByLibelle($libelle);
+    }
 }
