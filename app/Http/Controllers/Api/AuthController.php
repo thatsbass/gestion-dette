@@ -1,57 +1,46 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-
-use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
+use App\Contracts\AuthServiceInterface;
 use Illuminate\Http\Request;
-
-use App\Services\AuthTokenServiceInterface;
+use App\Http\Controllers\Controller;
 
 class AuthController extends Controller
 {
-    protected $authTokenService;
+    protected $authService;
 
-    public function __construct(AuthTokenServiceInterface $authTokenService)
+    public function __construct(AuthServiceInterface $authService)
     {
-        $this->authTokenService = $authTokenService;
+        $this->authService = $authService;
     }
 
     public function login(Request $request)
     {
-        if (auth()->attempt($request->only('login', 'password'))) {
-            $user = auth()->user();
-            $token = $this->authTokenService->createToken($user);
-            
-            return response()->json([
-                'data' => new UserResource($user),
-                'token' => $token
-            ], 200);
+        $credentials = $request->only("login", "password");
+
+        if ($this->authService->attempt($credentials)) {
+            $user = $this->authService->user();
+            $token = $this->authService->createToken($user, "authToken")
+                ->accessToken;
+
+            return response()->json(
+                [
+                    "token" => $token,
+                    "Data" => $user,
+                ],
+                200
+            );
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        return response()->json(
+            ["message" => "login ou mot de passe incorrect"],
+            401
+        );
     }
-    public function logout(Request $request)
+
+    public function logout()
     {
-        $token = $request->bearerToken();
-
-        $this->authTokenService->revokeToken($token);
-
-        return response()->json(['message' => 'Logged out successfully'], 200);
+        $this->authService->logout();
+        return response()->json(["message" => "Logged out successfully"]);
     }
-
-
-    public function refreshToken(Request $request)
-{
-    $refreshToken = $request->input('refresh_token');
-    
-    $newToken = $this->authTokenService->refreshToken($refreshToken);
-
-    if (!$newToken) {
-        return response()->json(['message' => 'Invalid refresh token'], 400);
-    }
-
-    return response()->json($newToken, 200);
-}
-
 }

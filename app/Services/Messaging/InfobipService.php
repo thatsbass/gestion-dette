@@ -29,6 +29,4 @@ class InfobipService implements MessagingServiceInterface
 
         return $response->successful();
     }
-
-
 }
