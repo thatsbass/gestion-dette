@@ -7,6 +7,7 @@ use App\Http\Controllers\DetteController;
 use Illuminate\Support\Facades\Route;
 use App\Services\DetteService;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ArchiveDetteController;
 
 Route::get("/test", function (DetteService $detteService) {
     return index($detteService);
@@ -75,6 +76,31 @@ Route::group(["prefix" => "v1"], function () {
             "sendCustomMessageForClientsSelected",
         ]);
     });
+    // Archivage
+    Route::get("api/v1/dettes/archive", [
+        ArchiveDetteController::class,
+        "index",
+    ]);
+    Route::get("api/v1/archive/clients/{clientId}/dettes", [
+        ArchiveDetteController::class,
+        "getByClient",
+    ]);
+    Route::get("api/v1/archive/dettes/{id}", [
+        ArchiveDetteController::class,
+        "getById",
+    ]);
+    Route::get("api/v1/restaure/{date}", [
+        ArchiveDetteController::class,
+        "restoreByDate",
+    ]);
+    Route::get("api/v1/restaure/dette/{id}", [
+        ArchiveDetteController::class,
+        "restoreById",
+    ]);
+    Route::get("api/v1/restaure/client/{clientId}", [
+        ArchiveDetteController::class,
+        "restoreByClient",
+    ]);
 
     // Route pour les articles
     Route::middleware(["auth:api", "checkRole:Boutiquier,Admin"])->group(

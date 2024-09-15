@@ -18,9 +18,6 @@ class ArchiveDettesJob implements ShouldQueue
     public function handle()
     {
         $archiveService = app(ArchiveServiceInterface::class);
-        $driver = config("archive.default");
-
-        Log::info("Driver utilisé pour l'archivage : $driver");
 
         // Processus d'archivage...
         $dettesSoldees = Dette::whereRaw(

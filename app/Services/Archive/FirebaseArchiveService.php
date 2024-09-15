@@ -2,7 +2,7 @@
 
 namespace App\Services\Archive;
 
-use App\Models\Dette;
+use App\Models\ArchiveDette;
 use Kreait\Firebase\Factory;
 use Log;
 
@@ -12,24 +12,52 @@ class FirebaseArchiveService implements ArchiveServiceInterface
 
     public function __construct($credential, $db_url)
     {
-        Log::info("DB_URL : " . $db_url);
-
         $factory = (new Factory())
             ->withServiceAccount($credential)
             ->withDatabaseUri($db_url);
         $this->database = $factory->createDatabase();
     }
 
-    public function archiveDette(Dette $dette): void
+    public function archiveDette(ArchiveDette $dette): void
     {
-        $dette->load("articles", "paiements");
+        $this->database
+            ->getReference("archive/dettes")
+            ->push($dette->toArray());
+    }
 
-        $this->database->getReference("archive/dettes")->push([
-            "client_id" => $dette->client_id,
-            "montant" => $dette->montant,
-            "articles" => $dette->articles->toArray(),
-            "paiements" => $dette->paiements->toArray(),
-            "archived_at" => now(),
-        ]);
+    public function getAll()
+    {
+        return $this->database->getReference("archive/dettes")->getValue();
+    }
+
+    public function getByClient($clientId)
+    {
+        $dettes = $this->getAll();
+        return array_filter(
+            $dettes,
+            fn($dette) => $dette["client_id"] == $clientId
+        );
+    }
+
+    public function getById($id)
+    {
+        return $this->database
+            ->getReference("archive/dettes/" . $id)
+            ->getValue();
+    }
+
+    public function restoreByDate($date)
+    {
+        // Logic to retrieve and delete dettes by date
+    }
+
+    public function restoreById($id)
+    {
+        $this->database->getReference("archive/dettes/" . $id)->remove();
+    }
+
+    public function restoreByClient($clientId)
+    {
+        // Logic to retrieve and delete dettes by client ID
     }
 }
