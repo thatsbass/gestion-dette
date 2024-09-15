@@ -11,7 +11,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Log;
 
-
 class ArchiveDettesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -19,13 +18,15 @@ class ArchiveDettesJob implements ShouldQueue
     public function handle()
     {
         $archiveService = app(ArchiveServiceInterface::class);
-        $driver = config('archive.driver'); 
+        $driver = config("archive.default");
 
-        Log::info("Driver utilisé pour l'archivage : $driver"); 
+        Log::info("Driver utilisé pour l'archivage : $driver");
 
         // Processus d'archivage...
-        $dettesSoldees = Dette::whereRaw('(montant - (SELECT COALESCE(SUM(montant), 0) FROM paiements WHERE dette_id = dettes.id)) = 0')
-            ->with('articles', 'paiements')
+        $dettesSoldees = Dette::whereRaw(
+            "(montant - (SELECT COALESCE(SUM(montant), 0) FROM paiements WHERE dette_id = dettes.id)) = 0"
+        )
+            ->with("articles", "paiements")
             ->get();
 
         foreach ($dettesSoldees as $dette) {
@@ -33,7 +34,12 @@ class ArchiveDettesJob implements ShouldQueue
                 $archiveService->archiveDette($dette);
                 $dette->delete();
             } catch (\Exception $e) {
-                Log::error('Erreur lors de l\'archivage de la dette ID ' . $dette->id . ': ' . $e->getMessage());
+                Log::error(
+                    'Erreur lors de l\'archivage de la dette ID ' .
+                        $dette->id .
+                        ": " .
+                        $e->getMessage()
+                );
             }
         }
     }

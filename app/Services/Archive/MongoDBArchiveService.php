@@ -9,26 +9,30 @@ use Log;
 class MongoDBArchiveService implements ArchiveServiceInterface
 {
     protected $client;
-
-    public function __construct()
+    protected $database;
+    public function __construct($dsn, $db)
     {
-        Log::info('MongoDBArchiveService instancié');
-    
-        $this->client = new MongoClient(config('database.connections.mongodb.dsn'));
+        Log::info("DSN : " . $dsn . "</br>" . "DB : " . $db);
+
+        $this->client = new MongoClient($dsn);
+        $this->database = $db;
     }
-    
+
     public function archiveDette(Dette $dette): void
     {
         // Charger les relations de la dette
-        $dette->load('articles', 'paiements');
+        $dette->load("articles", "paiements");
 
-        $collection = $this->client->selectCollection('archive', 'dettes');
+        $collection = $this->client->selectCollection(
+            $this->database,
+            "dettes"
+        );
         $collection->insertOne([
-            'client_id' => $dette->client_id,
-            'montant' => $dette->montant,
-            'articles' => $dette->articles->toArray(), 
-            'paiements' => $dette->paiements->toArray(),
-            'archived_at' => now(),
+            "client_id" => $dette->client_id,
+            "montant" => $dette->montant,
+            "articles" => $dette->articles->toArray(),
+            "paiements" => $dette->paiements->toArray(),
+            "archived_at" => now(),
         ]);
     }
 }

@@ -8,6 +8,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Models\Client;
+use Log;
+use App\Notifications\MessageNotification;
 
 class SendNotificationJob implements ShouldQueue
 {
@@ -15,37 +18,61 @@ class SendNotificationJob implements ShouldQueue
 
     protected $clientId;
     protected $selectedClients;
+    protected $customMessage;
 
-    /**
-     * Create a new job instance.
-     *
-     * @param int|null $clientId The ID of a single client to notify (optional)
-     * @param array|null $selectedClients An array of selected client IDs (optional)
-     */
-
-    public function __construct($clientId = null, array $selectedClients = null)
-    {
+    public function __construct(
+        $clientId = null,
+        $selectedClients = [],
+        $customMessage = null
+    ) {
         $this->clientId = $clientId;
         $this->selectedClients = $selectedClients;
+        $this->customMessage = $customMessage;
     }
 
-    /**
-     * Execute the job.
-     */
-
-    public function handle(NotificationService $notificationService)
+    public function handle()
     {
+        $notificationService = app(NotificationService::class);
+
         if ($this->clientId) {
-            // If a single client ID is provided, send notification to that client
-            $notificationService->sendNotificationToClient($this->clientId);
-        } elseif ($this->selectedClients) {
-            // If an array of selected clients is provided, send notifications to them
-            $notificationService->sendNotificationsToSelectedClients(
-                $this->selectedClients
+            $totalDue = $notificationService->getTotalDueClientById(
+                $this->clientId
             );
-        } else {
-            // If no specific client is provided, send notifications to all clients
-            $notificationService->sendNotificationsToAllClients();
+            $client = Client::find($this->clientId);
+            if ($client) {
+                $message = "Cher(e) {$client->surnom}, vous devez un montant total de {$totalDue} CFA. Veuillez régler votre dette. Merci";
+                $this->sendNotification($client, $message);
+            }
+        } elseif (!empty($this->selectedClients)) {
+            foreach ($this->selectedClients as $clientData) {
+                $clientId = $clientData["id"];
+                $totalDue = $notificationService->getTotalDueClientById(
+                    $clientId
+                );
+                $client = Client::find($clientId);
+                if ($client) {
+                    $message =
+                        $this->customMessage ??
+                        "Cher(e) {$client->surnom}, vous devez un montant total de {$totalDue} CFA. Veuillez régler votre dette. Merci";
+                    $this->sendNotification($client, $message);
+                }
+            }
+        }
+    }
+
+    protected function sendNotification($client, $message)
+    {
+        try {
+            // Send notification through SMS service
+            $notificationService = app(NotificationService::class);
+            $notificationService->sendMessage($client->telephone, $message);
+            Log::info("Sending message to {$client->telephone}...");
+            // Store notification in database
+            $client->notify(new MessageNotification($message));
+        } catch (\Exception $e) {
+            Log::error(
+                "Error while sending message to {$client->telephone}: {$e->getMessage()}"
+            );
         }
     }
 }

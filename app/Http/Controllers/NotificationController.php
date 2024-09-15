@@ -4,66 +4,50 @@ namespace App\Http\Controllers;
 
 use App\Events\NotificationEvent;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-
+use Log;
 class NotificationController extends Controller
 {
-    /**
-     * Notify a single client.
-     *
-     * @param int $id Client ID
-     * @return JsonResponse
-     */
-    public function notifySingleClient(int $id): JsonResponse
+    public function notifySingleClient($id)
     {
-        // Dispatch the NotificationEvent for a single client
-        NotificationEvent::dispatch($id);
-
+        event(new NotificationEvent($id, "single"));
         return response()->json(
-            ["status" => "Notification job dispatched for client ID " . $id],
-            202
+            ["message" => "Notification request is being processed."],
+            200
         );
     }
 
-    /**
-     * Notify selected clients.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function notifyForClientsSelected(Request $request): JsonResponse
+    public function notifyForClientsSelected(Request $request)
     {
-        $clientIds = $request->input("client_id", []);
+        $data = $request->validate([
+            "client_id" => "required|array",
+            "client_id.*.id" => "required|integer",
+        ]);
 
-        // Dispatch the NotificationEvent for selected clients
-        NotificationEvent::dispatch(null, $clientIds);
-
-        // Return immediate response
+        event(new NotificationEvent(null, "selected", $data["client_id"]));
         return response()->json(
-            ["status" => "Notification job dispatched for selected clients"],
-            202
+            ["message" => "Notification request is being processed."],
+            200
         );
     }
 
-    /**
-     * Send custom messages to selected clients.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function sendCustomMessageForClientsSelected(
-        Request $request
-    ): JsonResponse {
-        $clientIds = $request->input("client_id", []);
-        $message = $request->input("message", "");
-
-        NotificationEvent::dispatch(null, $clientIds, $message);
-
+    public function sendCustomMessageForClientsSelected(Request $request)
+    {
+        $data = $request->validate([
+            "client_id" => "required|array",
+            "client_id.*.id" => "required|integer",
+            "message" => "required|string",
+        ]);
+        event(
+            new NotificationEvent(
+                null,
+                "custom",
+                $data["client_id"],
+                $data["message"]
+            )
+        );
         return response()->json(
-            ["status" => "Custom message job dispatched for selected clients"],
-            202
+            ["message" => "Notification request is being processed."],
+            200
         );
     }
 }
-
-

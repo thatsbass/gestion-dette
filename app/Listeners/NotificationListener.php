@@ -5,25 +5,25 @@ namespace App\Listeners;
 use App\Events\NotificationEvent;
 use App\Jobs\SendNotificationJob;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-
 class NotificationListener implements ShouldQueue
 {
-    use InteractsWithQueue;
-
     /**
-     * Handle the event.
-     *
-     * @param NotificationEvent $event
      * @return void
      */
-    public function handle(NotificationEvent $event)
+    public function handle(NotificationEvent $event): void
     {
-        // Dispatch the job with appropriate parameters
-        SendNotificationJob::dispatch(
-            $event->clientId,
-            $event->selectedClients,
-            $event->message
-        );
+        if ($event->type === "single") {
+            dispatch(new SendNotificationJob($event->clientId));
+        } elseif ($event->type === "selected") {
+            dispatch(new SendNotificationJob(null, $event->selectedClients));
+        } elseif ($event->type === "custom") {
+            dispatch(
+                new SendNotificationJob(
+                    null,
+                    $event->selectedClients,
+                    $event->customMessage
+                )
+            );
+        }
     }
 }

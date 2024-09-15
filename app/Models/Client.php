@@ -13,7 +13,6 @@ class Client extends Model
 
     protected $fillable = ["surnom", "adresse", "telephone", "user_id"];
 
-    // Relation avec User (Un client peut avoir un utilisateur)
     function user()
     {
         return $this->belongsTo(User::class);

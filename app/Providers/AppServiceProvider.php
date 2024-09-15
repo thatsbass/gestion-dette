@@ -18,9 +18,7 @@ use App\Repositories\DetteRepository;
 use App\Repositories\PaiementRepository;
 use App\Repositories\Interfaces\DetteRepositoryInterface;
 use App\Repositories\Interfaces\PaiementRepositoryInterface;
-// use App\Observers\UserObserver;
 use App\Models\User;
-
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,15 +27,25 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(ClientRepositoryInterface::class, ClientRepository::class);
+        $this->app->bind(
+            ClientRepositoryInterface::class,
+            ClientRepository::class
+        );
         $this->app->bind(ClientServiceInterface::class, ClientService::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
-        $this->app->bind(ArticleRepositoryInterface::class, ArticleRepository::class);
+        $this->app->bind(
+            ArticleRepositoryInterface::class,
+            ArticleRepository::class
+        );
         $this->app->bind(ArticleServiceInterface::class, ArticleService::class);
-        $this->app->bind(DetteRepositoryInterface::class, DetteRepository::class);
-        $this->app->bind(PaiementRepositoryInterface::class, PaiementRepository::class);
-
-
+        $this->app->bind(
+            DetteRepositoryInterface::class,
+            DetteRepository::class
+        );
+        $this->app->bind(
+            PaiementRepositoryInterface::class,
+            PaiementRepository::class
+        );
     }
 
     /**
@@ -45,6 +53,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-     //
+        //
     }
 }
