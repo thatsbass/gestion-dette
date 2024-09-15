@@ -19,8 +19,11 @@ class ClientController extends Controller
     protected $userService;
     protected $photoService;
 
-    public function __construct(ClientService $clientService, PhotoService $photoService, UserService $userService)
-    {
+    public function __construct(
+        ClientService $clientService,
+        PhotoService $photoService,
+        UserService $userService
+    ) {
         $this->clientService = $clientService;
         $this->photoService = $photoService;
         $this->userService = $userService;
@@ -28,44 +31,50 @@ class ClientController extends Controller
 
     public function store(StoreClientRequest $request): JsonResponse
     {
-  
-        $clientData = $request->only(['surnom', 'adresse', 'telephone']);
-        $userData = $request->input('user', null);
-        $photo = $request->file('user.photo'); 
-    
+        $clientData = $request->only(["surnom", "adresse", "telephone"]);
+        $userData = $request->input("user", null);
+        $photo = $request->file("user.photo");
+
         if ($photo) {
             $photoData = $this->photoService->uploadPhoto($photo);
-            $userData['photo'] = $photoData['url'];
-            $userData['photo_status'] = $photoData['status']; 
+            $userData["photo"] = $photoData["url"];
+            $userData["photo_status"] = $photoData["status"];
         }
-        
-        
+
         $client = $this->clientService->createClient($clientData, $userData);
         return response()->json(new ClientResource($client), 201);
     }
 
+    public function createUserForClient(
+        CreateClientUserRequest $request
+    ): JsonResponse {
+        $userData = $request->only([
+            "nom",
+            "prenom",
+            "login",
+            "password",
+            "role_id",
+            "client_id",
+        ]);
+        $photo = $request->file("photo");
 
-    public function createUserForClient(CreateClientUserRequest $request): JsonResponse
-    {
-       
-        $userData = $request->only(['nom', 'prenom', 'login', 'password', 'role_id', 'client_id']);
-        $photo = $request->file('photo');
-       
         if ($photo) {
             $photoData = $this->photoService->uploadPhoto($photo);
-            $userData['photo'] = $photoData['url'];
-            $userData['photo_status'] = $photoData['status']; 
+            $userData["photo"] = $photoData["url"];
+            $userData["photo_status"] = $photoData["status"];
         }
 
         $user = $this->userService->createUserForClient($userData);
 
         return response()->json(new UserResource($user), 201);
     }
-    
 
     public function update(StoreClientRequest $request, $id): JsonResponse
     {
-        $client = $this->clientService->updateClient($id, $request->validated());
+        $client = $this->clientService->updateClient(
+            $id,
+            $request->validated()
+        );
 
         return response()->json(new ClientResource($client), 200);
     }
@@ -73,46 +82,59 @@ class ClientController extends Controller
     // Récupérer tous les clients avec des filtres optionnels
     public function index(Request $request): JsonResponse
     {
-        $hasAccount = $request->query('comptes'); // oui | non
-        $isActive = $request->query('active'); // oui | non
+        $hasAccount = $request->query("comptes");
+        $isActive = $request->query("active");
 
         if ($hasAccount) {
-            $clients = $this->clientService->getClientsByAccountStatus($hasAccount);
+            $clients = $this->clientService->getClientsByAccountStatus(
+                $hasAccount
+            );
         } elseif ($isActive) {
-            $clients = $this->clientService->getClientsByActiveStatus($isActive);
+            $clients = $this->clientService->getClientsByActiveStatus(
+                $isActive
+            );
         } else {
             $clients = $this->clientService->getAllClients();
         }
 
-        return response()->json([
-            'status' => 200,
-            'data' => $clients->isEmpty() ? null : new ClientCollection($clients),
-            'message' => $clients->isEmpty() ? 'Pas de clients trouvés' : 'Liste des clients'
-        ], 200);
+        return response()->json(
+            [
+                "status" => 200,
+                "data" => $clients->isEmpty()
+                    ? null
+                    : new ClientCollection($clients),
+                "message" => $clients->isEmpty()
+                    ? "Pas de clients trouvés"
+                    : "Liste des clients",
+            ],
+            200
+        );
     }
 
     // Recherche client par téléphone
     public function findByTelephone(Request $request): JsonResponse
     {
-        $telephone = $request->input('telephone');
+        $telephone = $request->input("telephone");
         $client = $this->clientService->findByTelephone($telephone);
 
         if ($client) {
-            return response()->json([
-                'status' => 200,
-                'data' => new ClientResource($client),
-                'message' => 'Client trouvé'
-            ], 200);
+            return response()->json(
+                [
+                    "status" => 200,
+                    "data" => new ClientResource($client),
+                    "message" => "Client trouvé",
+                ],
+                200
+            );
         }
 
-        return response()->json([
-            'status' => 411,
-            'data' => null,
-            'message' => 'Client non trouvé'
-        ], 411);
+        return response()->json(
+            [
+                "status" => 411,
+                "data" => null,
+                "message" => "Client non trouvé",
+            ],
+            411
+        );
     }
-    
 }
-
-
-

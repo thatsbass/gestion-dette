@@ -3,10 +3,11 @@
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 use App\Events\UserPhotoUploaded;
 use App\Listeners\HandleUserPhotoUpload;
 use App\Listeners\HandleEmailListener;
+use App\Events\NotificationEvent;
+use App\Listeners\NotificationListener;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -18,8 +19,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         UserPhotoUploaded::class => [
             HandleUserPhotoUpload::class,
-            HandleEmailListener::class
+            HandleEmailListener::class,
         ],
+        NotificationEvent::class => [NotificationListener::class],
     ];
 
     /**
@@ -27,7 +29,7 @@ class EventServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         parent::boot();
     }

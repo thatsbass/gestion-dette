@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DetteController;
 use Illuminate\Support\Facades\Route;
 use App\Services\DetteService;
+use App\Http\Controllers\NotificationController;
 
 Route::get("/test", function (DetteService $detteService) {
     return index($detteService);
@@ -28,6 +29,7 @@ Route::group(["prefix" => "v1"], function () {
         "auth:api"
     );
     Route::post("refresh", [AuthController::class, "refresh"]);
+
     // Route pour les clients
     Route::middleware(["auth:api", "checkRole:Admin,Boutiquier"])->group(
         function () {
@@ -52,6 +54,26 @@ Route::group(["prefix" => "v1"], function () {
         Route::put("/{id}", [UserController::class, "update"]);
         Route::delete("/{id}", [UserController::class, "destroy"]);
         Route::get("/", [UserController::class, "index"]);
+    });
+
+    Route::prefix("notification")->group(function () {
+        // Route pour notifier un client spécifique
+        Route::get("client/{id}", [
+            NotificationController::class,
+            "notifySingleClient",
+        ]);
+
+        // Route pour notifier les clients sélectionnés
+        Route::post("client/all", [
+            NotificationController::class,
+            "notifyForClientsSelected",
+        ]);
+
+        // Route pour envoyer un message personnalisé à des clients sélectionnés
+        Route::post("client/message", [
+            NotificationController::class,
+            "sendCustomMessageForClientsSelected",
+        ]);
     });
 
     // Route pour les articles

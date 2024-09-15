@@ -10,29 +10,36 @@ use App\Services\PhotoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-
 class UserController extends Controller
 {
     protected $userService;
     protected $photoService;
 
-    public function __construct(UserService $userService, PhotoService $photoService)
-    {
+    public function __construct(
+        UserService $userService,
+        PhotoService $photoService
+    ) {
         $this->userService = $userService;
         $this->photoService = $photoService;
     }
 
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $userData = $request->only(['nom', 'prenom', 'login', 'password', 'role_id']);
-        $photo = $request->file('photo');
-
+        $userData = $request->only([
+            "nom",
+            "prenom",
+            "login",
+            "password",
+            "role_id",
+        ]);
+        $photo = $request->file("photo");
+        // A gerer pour le temps d'execution
         if ($photo) {
             $photoData = $this->photoService->uploadPhoto($photo);
-            $userData['photo'] = $photoData['url'];
-            $userData['photo_status'] = $photoData['status'];
+            $userData["photo"] = $photoData["url"];
+            $userData["photo_status"] = $photoData["status"];
         }
-        
+
         $user = $this->userService->createUser($userData);
 
         return response()->json(new UserResource($user), 201);
@@ -53,11 +60,14 @@ class UserController extends Controller
     // }
     public function index(Request $request): JsonResponse
     {
-        $role = $request->query('role');
-        $active = $request->query('active');
+        $role = $request->query("role");
+        $active = $request->query("active");
 
         if ($role && $active) {
-            $users = $this->userService->getUsersByRoleAndStatus($role, $active);
+            $users = $this->userService->getUsersByRoleAndStatus(
+                $role,
+                $active
+            );
         } elseif ($role) {
             $users = $this->userService->getUsersByRole($role);
         } elseif ($active) {
@@ -66,10 +76,15 @@ class UserController extends Controller
             $users = $this->userService->getAllUsers();
         }
 
-        return response()->json([
-            'status' => 200,
-            'data' => $users->isEmpty() ? null : $users,
-            'message' => $users->isEmpty() ? 'Aucun utilisateur trouvé' : 'Liste des utilisateurs'
-        ], 200);
+        return response()->json(
+            [
+                "status" => 200,
+                "data" => $users->isEmpty() ? null : $users,
+                "message" => $users->isEmpty()
+                    ? "Aucun utilisateur trouvé"
+                    : "Liste des utilisateurs",
+            ],
+            200
+        );
     }
 }

@@ -24,10 +24,15 @@ class HandleEmailListener
      */
     public function handle(UserPhotoUploaded $event): void
     {
-         $user = $event->user;
-         $qrCodePath = app('App\Services\QrCodeService')->generateQrCode($user->login);
-         $pdf = app('App\Services\PdfService')->generateUserPdf($event->user, $event->user->photo, $qrCodePath);
-         EmailJob::dispatch($user, $pdf);
-     
+        $user = $event->user;
+        $qrCodePath = app("App\Services\QrCodeService")->generateQrCode(
+            $user->login
+        );
+        $pdf = app("App\Services\PdfService")->generateUserPdf(
+            $event->user,
+            $event->user->photo,
+            $qrCodePath
+        );
+        EmailJob::dispatch($user, $pdf);
     }
 }
