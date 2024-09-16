@@ -10,11 +10,11 @@ class MessageNotification extends Notification
 {
     use Queueable;
 
-    protected $totalDue;
+    protected $message;
 
-    public function __construct($totalDue)
+    public function __construct($message)
     {
-        $this->totalDue = $totalDue;
+        $this->message = $message;
     }
 
     public function via($notifiable)
@@ -25,7 +25,7 @@ class MessageNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            "message" => "Rappel de dette : {$this->totalDue} CFA",
+            "message" => "$this->message",
         ];
     }
 }

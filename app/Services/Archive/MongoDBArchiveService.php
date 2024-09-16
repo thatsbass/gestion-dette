@@ -2,8 +2,9 @@
 
 namespace App\Services\Archive;
 
-use App\Models\ArchiveDette;
+use App\Models\Dette;
 use MongoDB\Client as MongoClient;
+use MongoDB\BSON\UTCDateTime;
 
 class MongoDBArchiveService implements ArchiveServiceInterface
 {
@@ -16,13 +17,23 @@ class MongoDBArchiveService implements ArchiveServiceInterface
         $this->database = $db;
     }
 
-    public function archiveDette(ArchiveDette $dette): void
+    public function archiveDette(Dette $dette): void
     {
+        // Charger les relations de la dette
+        $dette->load("articles", "paiements");
+
         $collection = $this->client->selectCollection(
             $this->database,
             "dettes"
         );
-        $collection->insertOne($dette->toArray());
+        $collection->insertOne([
+            "dette_id" => $dette->id,
+            "client_id" => $dette->client_id,
+            "montant" => $dette->montant,
+            "articles" => $dette->articles->toArray(),
+            "paiements" => $dette->paiements->toArray(),
+            "archived_at" => new UTCDateTime(now()->timestamp * 1000),
+        ]);
     }
 
     public function getAll()
@@ -32,6 +43,21 @@ class MongoDBArchiveService implements ArchiveServiceInterface
             "dettes"
         );
         return $collection->find()->toArray();
+    }
+
+    public function getByDate($date)
+    {
+        $collection = $this->client->selectCollection(
+            $this->database,
+            "dettes"
+        );
+        return $collection
+            ->find([
+                "archived_at" => new UTCDateTime(
+                    (new \DateTime($date))->getTimestamp() * 1000
+                ),
+            ])
+            ->toArray();
     }
 
     public function getByClient($clientId)
@@ -52,26 +78,12 @@ class MongoDBArchiveService implements ArchiveServiceInterface
         return $collection->findOne(["_id" => new \MongoDB\BSON\ObjectId($id)]);
     }
 
-    public function restoreByDate($date)
-    {
-        // Logic to retrieve and delete dettes by date
-    }
-
-    public function restoreById($id)
+    public function deleteById($id)
     {
         $collection = $this->client->selectCollection(
             $this->database,
             "dettes"
         );
         $collection->deleteOne(["_id" => new \MongoDB\BSON\ObjectId($id)]);
-    }
-
-    public function restoreByClient($clientId)
-    {
-        $collection = $this->client->selectCollection(
-            $this->database,
-            "dettes"
-        );
-        $collection->deleteMany(["client_id" => $clientId]);
     }
 }

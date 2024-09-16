@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Dette extends Model
 {
-    protected $fillable = ['montant', 'date', 'client_id'];
+    protected $fillable = ["montant", "deadline", "client_id"];
 
     public function client()
     {
@@ -20,9 +20,8 @@ class Dette extends Model
 
     public function articles()
     {
-        return $this->belongsToMany(Article::class, 'article_dette')
-                    ->withPivot('quantity', 'price')
-                    ->withTimestamps();
+        return $this->belongsToMany(Article::class, "article_dette")
+            ->withPivot("quantity", "price")
+            ->withTimestamps();
     }
 }
-

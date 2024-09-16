@@ -35,7 +35,7 @@ class DetteService
                     if ($article) {
                         if ($article->quantite < $articleData["qteVente"]) {
                             throw new Exception(
-                                'Oups!, la quantite d\'article est insuffisante'
+                                'desole!, la quantite d\'article est insuffisante'
                             );
                         }
                         $article->dettes()->attach($dette->id, [

@@ -3,7 +3,9 @@
 namespace App\Repositories;
 
 use App\Services\Archive\ArchiveServiceInterface;
-use App\Models\ArchiveDette;
+use App\Models\Dette;
+use App\Models\Paiement;
+use Illuminate\Support\Facades\DB;
 
 class ArchiveDetteRepository
 {
@@ -29,18 +31,65 @@ class ArchiveDetteRepository
         return $this->archiveService->getById($id);
     }
 
-    public function restoreByDate($date)
+    public function deleteArchivedDette($id)
     {
-        return $this->archiveService->restoreByDate($date);
+        // Supprimer les données archivées dans Firebase ou MongoDB
+        $this->archiveService->deleteById($id);
     }
 
-    public function restoreById($id)
+    public function restoreByDate($date)
     {
-        return $this->archiveService->restoreById($id);
+        // Récupérer toutes les dettes archivées à la date spécifiée
+        $archivedDettes = $this->archiveService->getByDate($date);
+
+        // Restaurer chaque dette
+        foreach ($archivedDettes as $dette) {
+            $this->restore($dette);
+        }
     }
 
     public function restoreByClient($clientId)
     {
-        return $this->archiveService->restoreByClient($clientId);
+        // Récupérer toutes les dettes archivées pour le client spécifié
+        $archivedDettes = $this->archiveService->getByClient($clientId);
+
+        // Restaurer chaque dette
+        foreach ($archivedDettes as $dette) {
+            $this->restore($dette);
+        }
+    }
+
+    protected function restore(array $dette)
+    {
+        DB::transaction(function () use ($dette) {
+            // Restauration de la dette
+            $restoredDette = Dette::create([
+                "montant" => $dette["montant"],
+                "client_id" => $dette["client_id"],
+                "statut" => "pending", // Réinitialiser le statut
+                "limit_at" => $dette["limit_at"],
+            ]);
+
+            // Restaurer les paiements associés
+            foreach ($dette["paiements"] as $paiement) {
+                Paiement::create([
+                    "montant" => $paiement["montant"],
+                    "date" => $paiement["date"],
+                    "dette_id" => $restoredDette->id,
+                    "client_id" => $dette["client_id"],
+                ]);
+            }
+
+            // Restaurer les articles associés
+            foreach ($dette["articles"] as $article) {
+                $restoredDette->articles()->attach($article["id"], [
+                    "quantity" => $article["quantity"],
+                    "price" => $article["price"],
+                ]);
+            }
+
+            // Supprimer les données archivées maintenant que la restauration est terminée
+            $this->deleteArchivedDette($restoredDette->id);
+        });
     }
 }
