@@ -28,7 +28,6 @@ class DetteService
     {
         return DB::transaction(function () use ($data) {
             $dette = $this->detteRepository->create($data);
-
             if (isset($data["articles"])) {
                 foreach ($data["articles"] as $articleData) {
                     $article = Article::find($articleData["articleId"]);
@@ -68,32 +67,32 @@ class DetteService
     {
         return $this->detteRepository->getAll();
     }
-
-    public function addPayment(int $detteId, float $montant)
-    {
-        $dette = $this->detteRepository->findById($detteId);
-        if (!$dette) {
-            throw new Exception("Aucune dette correspondant");
-        }
-
-        $montantRestant = $dette->montant - $dette->paiements->sum("montant");
-        if ($montant <= $montantRestant) {
-            $paiement = $this->paiementRepository->create([
-                "montant" => $montant,
-                "date" => now(),
-                "dette_id" => $detteId,
-                "client_id" => $dette->client_id,
-            ]);
-
-            $dette->load("paiements");
-            return $dette;
-        } else {
-            throw new Exception(
-                "Le montant ne doit pas depasser le montant restant, le montant due est " .
-                    $montantRestant
-            );
-        }
+public function addPayment(int $detteId, float $montant)
+{
+    $dette = $this->detteRepository->findById($detteId);
+    if (!$dette) {
+        throw new Exception('Aucune dette correspondant');
     }
+
+    // Charger explicitement la relation paiements
+    $dette->load('paiements');
+
+    $montantRestant = $dette->montant - $dette->paiements->sum('montant');
+    if ($montant <= $montantRestant) {
+        $paiement = $this->paiementRepository->create([
+            'montant' => $montant,
+            'date' => now(),
+            'dette_id' => $detteId,
+            'client_id' => $dette->client_id,
+        ]);
+
+        $dette->load('paiements'); 
+        return $dette;
+    } else {
+        throw new Exception('Le montant ne doit pas depasser le montant restant, le montant due est ' . $montantRestant);
+    }
+}
+
 
     public function getDetteById(int $id)
     {

@@ -15,12 +15,12 @@ class DetteResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'montant' => $this->montant,
-            'date' => $this->date,
-            'client_id' => $this->client_id,
-            'paiements' => PaiementResource::collection($this->whenLoaded('paiements')),
-
+            "id" => $this->id,
+            "montant" => $this->montant,
+            "client_id" => $this->client_id,
+            "paiements" => PaiementResource::collection(
+                $this->whenLoaded("paiements")
+            ),
         ];
     }
 }

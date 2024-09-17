@@ -18,6 +18,10 @@ use App\Repositories\DetteRepository;
 use App\Repositories\PaiementRepository;
 use App\Repositories\Interfaces\DetteRepositoryInterface;
 use App\Repositories\Interfaces\PaiementRepositoryInterface;
+use App\Services\Interfaces\DemandeServiceInterface;
+use App\Services\DemandeService;
+use App\Repositories\Interfaces\DemandeRepositoryInterface;
+use App\Repositories\DemandeRepository;
 use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
@@ -45,6 +49,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PaiementRepositoryInterface::class,
             PaiementRepository::class
+        );
+        $this->app->bind(
+            DemandeServiceInterface::class,
+            DemandeService::class
+        );
+        $this->app->bind(
+            DemandeRepositoryInterface::class,
+            DemandeRepository::class
         );
     }
 

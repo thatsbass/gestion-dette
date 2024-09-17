@@ -9,13 +9,13 @@ class StoreDetteRequest extends FormRequest
     {
         return [
             "montant" => "required|numeric|gt:0",
-            "dealine" => ,
             "client_id" => "required|exists:clients,id",
             "articles" => "required|array|min:1",
             "articles.*.articleId" => "required|exists:articles,id",
             "articles.*.qteVente" => "required|numeric|min:1",
             "articles.*.prixVente" => "required|numeric|gt:0",
             "paiement.montant" => "nullable|numeric|lte:montant",
+            "limit_at" => "nullable|date|after_or_equal:today",
         ];
     }
 
@@ -25,15 +25,14 @@ class StoreDetteRequest extends FormRequest
             "montant.required" => "Le montant est obligatoire.",
             "montant.numeric" => "Le montant doit être un nombre.",
             "montant.gt" => "Le montant doit être supérieur à zéro.",
-            "clientId.required" => 'L\'ID du client est obligatoire.',
-            "clientId.exists" => 'Le client spécifié n\'existe pas.',
+            "client_id.required" => "L'ID du client est obligatoire.",
+            "client_id.exists" => "Le client spécifié n'existe pas.",
             "articles.required" => "Les articles sont obligatoires.",
             "articles.array" => "Les articles doivent être un tableau.",
             "articles.min" => "Vous devez ajouter au moins un article.",
             "articles.*.articleId.required" =>
-                'L\'ID de l\'article est obligatoire.',
-            "articles.*.articleId.exists" =>
-                'L\'article spécifié n\'existe pas.',
+                "L'ID de l'article est obligatoire.",
+            "articles.*.articleId.exists" => "L'article spécifié n'existe pas.",
             "articles.*.qteVente.required" =>
                 "La quantité vendue est obligatoire.",
             "articles.*.qteVente.numeric" =>
@@ -50,6 +49,9 @@ class StoreDetteRequest extends FormRequest
                 "Le montant du paiement doit être un nombre.",
             "paiement.montant.lte" =>
                 "Le montant du paiement ne peut pas être supérieur au montant de la dette.",
+            "limit_at.date" => "La date limite doit être une date valide.",
+            "limit_at.after_or_equal" =>
+                "La date limite doit être aujourd'hui ou une date future.",
         ];
     }
 }

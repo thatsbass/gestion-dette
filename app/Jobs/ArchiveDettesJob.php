@@ -19,6 +19,9 @@ class ArchiveDettesJob implements ShouldQueue
     {
         $archiveService = app(ArchiveServiceInterface::class);
 
+        $driver = config('archive.default');
+        Log::info("Driver utiliser: " . $driver);
+
         // Processus d'archivage...
         $dettesSoldees = Dette::whereRaw(
             "(montant - (SELECT COALESCE(SUM(montant), 0) FROM paiements WHERE dette_id = dettes.id)) = 0"
@@ -29,6 +32,7 @@ class ArchiveDettesJob implements ShouldQueue
         foreach ($dettesSoldees as $dette) {
             try {
                 $archiveService->archiveDette($dette);
+
                 $dette->delete();
             } catch (\Exception $e) {
                 Log::error(

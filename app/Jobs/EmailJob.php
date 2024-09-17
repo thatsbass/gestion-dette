@@ -27,11 +27,7 @@ class EmailJob implements ShouldQueue
     public function handle()
 {
     try {
-        // Envoyer l'email
-        // new UserCreationMail($this->user, $pdfPath);
         Mail::to($this->user->login)->send(new UserCreationMail($this->user, $this->pdf));
-
-        Log::info('Email sent to: ' . $this->user->login);
     } catch (\Exception $e) {
         Log::error('Email job failed: ' . $e->getMessage());
     }

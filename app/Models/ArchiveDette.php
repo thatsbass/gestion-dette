@@ -2,20 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ArchiveDette extends Model
 {
+    use HasFactory;
+    protected $table = "archived_dettes";
     protected $fillable = [
-        "client_id",
-        "montant",
-        "articles",
-        "paiements",
+        "dette_id",
         "archived_at",
+        "restored_at",
+        "cloud_from",
     ];
 
-    public function client()
+    protected $casts = [
+        'archived_at' => 'datetime',
+    ];
+
+    public function dette()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Dette::class, "dette_id");
     }
 }

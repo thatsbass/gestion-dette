@@ -15,11 +15,10 @@ class PaiementResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'montant' => $this->montant,
-            'date' => $this->date,
-            'dette_id' => $this->dette_id,
-            'client_id' => $this->client_id,
+            "id" => $this->id,
+            "montant" => $this->montant,
+            "dette_id" => $this->dette_id,
+            "client_id" => $this->client_id,
         ];
     }
 }

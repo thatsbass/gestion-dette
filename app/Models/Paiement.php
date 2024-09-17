@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Paiement extends Model
 {
-    protected $fillable = ['montant', 'date', 'dette_id', 'client_id'];
+    protected $fillable = ["montant", "dette_id", "client_id"];
 
     public function dette()
     {

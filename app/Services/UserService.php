@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Models\User;
 use App\Models\Client;
-use Hash;
 use Exception;
 class UserService
 {
@@ -29,8 +28,7 @@ class UserService
 
     public function createUserForClient(array $userData)
     {
-        // Hash le mot de passe
-        $userData['password'] = Hash::make($userData['password']);
+    
         $userData['role_id'] = 3;
         if (isset($userData['photo']) && is_array($userData['photo'])) {
             $userData['photo'] = $userData['photo']['url'] ?? null;

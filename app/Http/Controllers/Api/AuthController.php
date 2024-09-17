@@ -18,7 +18,7 @@ class AuthController extends Controller
     {
         $credentials = $request->only("login", "password");
 
-        if ($this->authService->attempt($credentials)) {
+        if ($this->authService->attemptAuth($credentials)) {
             $user = $this->authService->user();
             $token = $this->authService->createToken($user, "authToken")
                 ->accessToken;

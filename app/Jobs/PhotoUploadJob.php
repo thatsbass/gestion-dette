@@ -19,7 +19,7 @@ class PhotoUploadJob implements ShouldQueue
     protected $photoPath;
     protected $userId;
 
-    public $tries = 5; 
+    public $tries = 3; 
 
     public function __construct($photoPath, $userId)
     {

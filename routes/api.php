@@ -4,106 +4,114 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DetteController;
+use App\Http\Controllers\DemandeController;
 use Illuminate\Support\Facades\Route;
 use App\Services\DetteService;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ArchiveDetteController;
 
+// Route de test
 Route::get("/test", function (DetteService $detteService) {
     return index($detteService);
 });
 
 function index(DetteService $detteService)
 {
-    $all_dette = $detteService->getTotalDueByClient()->toArray();
-    return $all_dette;
+    return $detteService->getTotalDueByClient()->toArray();
 }
 
+// Routes version 1
 Route::group(["prefix" => "v1"], function () {
     // Authentification
     Route::post("login", [AuthController::class, "login"]);
     Route::post("register", [
         ClientController::class,
         "createUserForClient",
-    ])->middleware("auth:api", "checkRole:Admin,Boutiquier");
+    ]);
     Route::post("logout", [AuthController::class, "logout"])->middleware(
         "auth:api"
     );
     Route::post("refresh", [AuthController::class, "refresh"]);
 
-    // Route pour les clients
+    // Routes pour les clients
     Route::middleware(["auth:api", "checkRole:Admin,Boutiquier"])->group(
         function () {
             Route::prefix("clients")->group(function () {
                 Route::post("/", [ClientController::class, "store"]);
+                Route::get("/", [ClientController::class, "index"]);
                 Route::put("/{id}", [ClientController::class, "update"]);
                 Route::delete("/{id}", [ClientController::class, "destroy"]);
-                Route::get("/clients", [ClientController::class, "index"]);
+                Route::post("/telephone", [
+                    ClientController::class,
+                    "findByTelephone",
+                ]);
             });
-
-            // Rechercher un client par numéro de téléphone
-            Route::post("/telephone", [
-                ClientController::class,
-                "findByTelephone",
-            ]);
             Route::patch("{id}", [ClientController::class, "update"]);
         }
     );
-    // Route pour les users
-    Route::prefix("users")->group(function () {
-        Route::post("/", [UserController::class, "store"]);
-        Route::put("/{id}", [UserController::class, "update"]);
-        Route::delete("/{id}", [UserController::class, "destroy"]);
-        Route::get("/", [UserController::class, "index"]);
+
+    // Routes pour les utilisateurs
+    Route::post("/users", [UserController::class, "store"]);
+    Route::middleware(["auth:api", "checkRole:Admin, Boutiquier"])->group(function () {
+        Route::prefix("users")->group(function () {
+            // Route::post("/", [UserController::class, "store"]);
+            Route::get("/", [UserController::class, "index"]);
+            Route::put("/{id}", [UserController::class, "update"]);
+            Route::delete("/{id}", [UserController::class, "destroy"]);
+        });
     });
 
-    Route::prefix("notification")->group(function () {
-        // Route pour notifier un client spécifique
-        Route::get("client/{id}", [
-            NotificationController::class,
-            "notifySingleClient",
-        ]);
+    // Routes pour les notifications
+    Route::middleware(["auth:api", "checkRole:Admin,Boutiquier"])->group(
+        function () {
+            Route::prefix("notification")->group(function () {
+                Route::get("client/{id}", [
+                    NotificationController::class,
+                    "notifySingleClient",
+                ]);
+                Route::post("client/all", [
+                    NotificationController::class,
+                    "notifyForClientsSelected",
+                ]);
+                Route::post("client/message", [
+                    NotificationController::class,
+                    "sendCustomMessageForClientsSelected",
+                ]);
+            });
+        }
+    );
 
-        // Route pour notifier les clients sélectionnés
-        Route::post("client/all", [
-            NotificationController::class,
-            "notifyForClientsSelected",
-        ]);
+    // Routes pour l'archivage
+    Route::middleware(["auth:api", "checkRole:Admin,Boutiquier"])->group(
+        function () {
+            Route::prefix("archive")->group(function () {
+                Route::get("dettes", [ArchiveDetteController::class, "index"]);
+                Route::get("clients/{clientId}/dettes", [
+                    ArchiveDetteController::class,
+                    "getByClient",
+                ]);
+                Route::get("dettes/{id}", [
+                    ArchiveDetteController::class,
+                    "getById",
+                ]);
+                Route::get("restaure/{date}", [
+                    ArchiveDetteController::class,
+                    "restoreByDate",
+                ]);
+                Route::get("restaure/dette/{id}", [
+                    ArchiveDetteController::class,
+                    "restoreById",
+                ]);
+                Route::get("restaure/client/{clientId}", [
+                    ArchiveDetteController::class,
+                    "restoreByClient",
+                ]);
+            });
+        }
+    );
 
-        // Route pour envoyer un message personnalisé à des clients sélectionnés
-        Route::post("client/message", [
-            NotificationController::class,
-            "sendCustomMessageForClientsSelected",
-        ]);
-    });
-    // Archivage
-    Route::get("api/v1/dettes/archive", [
-        ArchiveDetteController::class,
-        "index",
-    ]);
-    Route::get("api/v1/archive/clients/{clientId}/dettes", [
-        ArchiveDetteController::class,
-        "getByClient",
-    ]);
-    Route::get("api/v1/archive/dettes/{id}", [
-        ArchiveDetteController::class,
-        "getById",
-    ]);
-    Route::get("api/v1/restaure/{date}", [
-        ArchiveDetteController::class,
-        "restoreByDate",
-    ]);
-    Route::get("api/v1/restaure/dette/{id}", [
-        ArchiveDetteController::class,
-        "restoreById",
-    ]);
-    Route::get("api/v1/restaure/client/{clientId}", [
-        ArchiveDetteController::class,
-        "restoreByClient",
-    ]);
-
-    // Route pour les articles
-    Route::middleware(["auth:api", "checkRole:Boutiquier,Admin"])->group(
+    // Routes pour les articles
+    Route::middleware(["auth:api", "checkRole:Boutiquier,Admin,Client"])->group(
         function () {
             Route::prefix("articles")->group(function () {
                 Route::post("/", [ArticleController::class, "store"]);
@@ -119,7 +127,6 @@ Route::group(["prefix" => "v1"], function () {
                     ArticleController::class,
                     "updateMultipleStock",
                 ]);
-                Route::get("{id}", [ArticleController::class, "showById"]);
                 Route::post("libelle", [
                     ArticleController::class,
                     "showByLibelle",
@@ -128,6 +135,7 @@ Route::group(["prefix" => "v1"], function () {
         }
     );
 
+    // Routes pour les dettes
     Route::middleware(["auth:api", "checkRole:Admin,Boutiquier"])->group(
         function () {
             Route::prefix("dettes")->group(function () {
@@ -150,19 +158,37 @@ Route::group(["prefix" => "v1"], function () {
         }
     );
 
+    // Routes pour les demandes
+
+    Route::middleware(["auth:api", "checkRole:Admin,Boutiquier,Client"])->group(
+        function () {
+            Route::prefix("demandes")->group(function () {
+                Route::post("/", [DemandeController::class, "store"]);
+                Route::get("/", [DemandeController::class, "index"]);
+                Route::post("/{id}/relance", [
+                    DemandeController::class,
+                    "relance",
+                ]);
+                Route::get("/notifications/client", [
+                    DemandeController::class,
+                    "notificationsClient",
+                ]);
+            });
+        }
+    );
+    Route::middleware(["auth:api", "checkRole:Boutiquier"])->group(
+        function () {
+            Route::get('demandes/notifications', [DemandeController::class, 'getNotifications']);
+            Route::get('demandes/all', [DemandeController::class, 'getAllDemandes']);
+        });
+  
+    // Route pour les URL non valides
     Route::any("{segment}", function () {
-        return response()->json([
-            "error" => "Invalid URL.",
-        ]);
+        return response()->json(["error" => "Invalid URL."], 404);
     })->where("segment", ".*");
 });
 
 // Route pour accès non autorisé
 Route::get("unauthorized", function () {
-    return response()->json(
-        [
-            "error" => "Unauthorized.",
-        ],
-        401
-    );
+    return response()->json(["error" => "Unauthorized."], 401);
 })->name("unauthorized");

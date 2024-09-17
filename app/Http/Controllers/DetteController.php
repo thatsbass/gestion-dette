@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDetteRequest;
@@ -10,6 +9,7 @@ use App\Http\Resources\DetteCollection;
 use App\Services\DetteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Models\Dette;
 
 class DetteController extends Controller
 {
@@ -79,5 +79,38 @@ class DetteController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erreur', 'errors' => $e->getMessage()], 411);
         }
+    }
+
+    // Nouvelle méthode pour consulter les demandes de dettes
+    public function indexDemandes(): JsonResponse
+    {
+        $client = auth()->user()->client;
+        $demandes = $client->demandes()->where('etat', 'En cours')->get();
+        return response()->json($demandes);
+    }
+
+    // Nouvelle méthode pour relancer une demande annulée
+    public function relance($id): JsonResponse
+    {
+        $dette = Dette::findOrFail($id);
+        if ($dette->etat != 'Annule') {
+            return response()->json(['message' => 'La demande n\'est pas annulée'], 400);
+        }
+
+        // Envoyer la relance après 2 jours
+        $dette->update(['etat' => 'En cours']);
+        
+        // Logique pour envoyer une notification ou relance
+        // Exemple : NotificationService::sendRelance($dette);
+
+        return response()->json(['message' => 'Relance envoyée'], 200);
+    }
+
+    // Nouvelle méthode pour obtenir les notifications de demandes
+    public function notificationsClient(): JsonResponse
+    {
+        $client = auth()->user()->client;
+        $notifications = $client->notifications; // Assurez-vous que vous avez une relation définie dans le modèle Client
+        return response()->json($notifications);
     }
 }

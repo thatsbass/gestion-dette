@@ -6,7 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Dette extends Model
 {
-    protected $fillable = ["montant", "deadline", "client_id"];
+  
+
+    protected $fillable = ["client_id", "montant", "statut", "limit_at"];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'archived_at' => 'datetime',
+    ];
+    protected $dates = ['limit_at'];
 
     public function client()
     {
@@ -23,5 +32,10 @@ class Dette extends Model
         return $this->belongsToMany(Article::class, "article_dette")
             ->withPivot("quantity", "price")
             ->withTimestamps();
+    }
+
+    public function archivedDette()
+    {
+        return $this->hasOne(ArchiveDette::class, "dette_id");
     }
 }

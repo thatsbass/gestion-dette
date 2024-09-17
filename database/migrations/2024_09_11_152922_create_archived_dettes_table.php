@@ -13,19 +13,15 @@ return new class extends Migration {
         Schema::create("archived_dettes", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("dette_id");
-            $table->unsignedBigInteger("client_id");
-            $table->decimal("montant", 10, 2);
-            $table->timestamps();
             $table
                 ->foreign("dette_id")
                 ->references("id")
                 ->on("dettes")
                 ->onDelete("cascade");
-            $table
-                ->foreign("client_id")
-                ->references("id")
-                ->on("clients")
-                ->onDelete("cascade");
+            $table->timestamp("archived_at")->nullable();
+            $table->timestamp("restored_at")->nullable();
+            $table->string("cloud_from")->nullable()->default("unknown");
+            $table->timestamps();
         });
     }
 

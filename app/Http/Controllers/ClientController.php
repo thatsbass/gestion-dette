@@ -31,19 +31,28 @@ class ClientController extends Controller
 
     public function store(StoreClientRequest $request): JsonResponse
     {
-        $clientData = $request->only(["surnom", "adresse", "telephone"]);
+        $clientData = $request->only(["surnom", "adresse", "telephone", "category_id"]);
+        
+        if ($request->has('max_montant') && $request->input('max_montant') !== null) {
+            $clientData['max_montant'] = $request->input('max_montant');
+        } else {
+            $clientData['max_montant'] = 0;
+        }
+    
         $userData = $request->input("user", null);
         $photo = $request->file("user.photo");
-
+    
         if ($photo) {
             $photoData = $this->photoService->uploadPhoto($photo);
             $userData["photo"] = $photoData["url"];
             $userData["photo_status"] = $photoData["status"];
         }
-
+    
         $client = $this->clientService->createClient($clientData, $userData);
         return response()->json(new ClientResource($client), 201);
     }
+    
+
 
     public function createUserForClient(
         CreateClientUserRequest $request
@@ -79,7 +88,6 @@ class ClientController extends Controller
         return response()->json(new ClientResource($client), 200);
     }
 
-    // Récupérer tous les clients avec des filtres optionnels
     public function index(Request $request): JsonResponse
     {
         $hasAccount = $request->query("comptes");

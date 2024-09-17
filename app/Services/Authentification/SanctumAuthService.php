@@ -14,7 +14,7 @@ class SanctumAuthService implements AuthServiceInterface
         $this->config = $config;
     }
 
-    public function attempt(array $credentials)
+    public function attemptAuth(array $credentials)
     {
         return Auth::attempt($credentials);
     }

@@ -13,6 +13,6 @@ class HandleUserPhotoUpload implements ShouldQueue
 
     public function handle(UserPhotoUploaded $event)
     {
-        PhotoUploadJob::dispatch($event->user->photo, $event->user->id)->delay(now()->addMinutes(10));
+        PhotoUploadJob::dispatch($event->user->photo, $event->user->id);
     }
 }

@@ -17,21 +17,23 @@ class ClientService
         $this->clientRepository = $clientRepository;
     }
 
+
     public function createClient(array $clientData, ?array $userData = null): Client
-    {
-        return DB::transaction(function () use ($clientData, $userData) {
-            $client = $this->clientRepository->create($clientData);
+{
+    return DB::transaction(function () use ($clientData, $userData) {
+        $client = $this->clientRepository->create($clientData);
 
-            if ($userData) {
-                $userData['role_id'] = 3; 
-                $user = app(UserService::class)->createUser($userData);
-                $client->user_id = $user->id;
-                $client->save();
-            }
+        if ($userData) {
+            $userData['role_id'] = 3;
+            $user = app(UserService::class)->createUserForClient($userData);
+            $client->user_id = $user->id;
+            $client->save();
+        }
 
-            return $client;
-        });
-    }
+        return $client;
+    });
+}
+
 
     public function updateClient(Client $client, array $data): Client
     {

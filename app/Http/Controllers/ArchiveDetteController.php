@@ -14,9 +14,17 @@ class ArchiveDetteController extends Controller
         $this->archiveDetteRepository = $archiveDetteRepository;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json($this->archiveDetteRepository->getAll());
+        $clientId = $request->query("client_id");
+        $date = $request->query("date");
+
+        $archivedDettes = $this->archiveDetteRepository->getAll(
+            $clientId,
+            $date
+        );
+
+        return response()->json($archivedDettes);
     }
 
     public function getByClient($clientId)

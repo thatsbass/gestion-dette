@@ -9,7 +9,7 @@ use Laravel\Passport\HasApiTokens;
 use App\Observers\UserObserver;
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use Notifiable, HasApiTokens, HasFactory;
 
     protected $fillable = [
         'nom', 'prenom', 'login', 'password', 'photo', 'photo_status', 'role_id', 'is_active'

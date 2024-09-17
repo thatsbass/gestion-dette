@@ -13,12 +13,9 @@ return new class extends Migration {
         Schema::create("dettes", function (Blueprint $table) {
             $table->id();
             $table->integer("montant");
-            $table->foreignId("client_id")->constrained("clients");
-            $table
-                ->enum("statut", ["pending", "paid", "archived"])
-                ->default("pending");
+            $table->foreignId("client_id")->constrained("clients")->onDelete('cascade'); 
+            $table->enum("statut", ["pending", "paid"])->default("pending");
             $table->timestamp("limit_at")->nullable();
-            // $table->timestamp('archived_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -15,7 +15,7 @@ class PassportAuthService implements AuthServiceInterface
         $this->config = $config;
     }
 
-    public function attempt(array $credentials)
+    public function attemptAuth(array $credentials)
     {
         return Auth::attempt($credentials);
     }
@@ -31,6 +31,7 @@ class PassportAuthService implements AuthServiceInterface
 
     public function user()
     {
+    
         return Auth::user();
     }
 
