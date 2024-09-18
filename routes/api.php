@@ -20,6 +20,16 @@ function index(DetteService $detteService)
     return $detteService->getTotalDueByClient()->toArray();
 }
 
+
+Route::get('/api-docs', function () {
+    return response()->file(storage_path('api-docs/swagger.yaml'));
+});
+
+Route::get('/docs', function () {
+    return view('swagger-ui');
+});
+
+
 // Routes version 1
 Route::group(["prefix" => "v1"], function () {
     // Authentification
@@ -181,6 +191,14 @@ Route::group(["prefix" => "v1"], function () {
             Route::get('demandes/notifications', [DemandeController::class, 'getNotifications']);
             Route::get('demandes/all', [DemandeController::class, 'getAllDemandes']);
         });
+
+        Route::middleware(["auth:api", "checkRole:Boutiquier"])->group(
+            function () {
+        Route::get('demandes/{id}/disponible', [DemandeController::class, 'checkDisponibilite']);
+        // Valider ou annuler une demande
+        Route::patch('demandes/{id}', [DemandeController::class, 'validerOuAnnuler']);
+
+            });
   
     // Route pour les URL non valides
     Route::any("{segment}", function () {

@@ -22,10 +22,17 @@ class ClientService
 {
     return DB::transaction(function () use ($clientData, $userData) {
         $client = $this->clientRepository->create($clientData);
-
         if ($userData) {
             $userData['role_id'] = 3;
-            $user = app(UserService::class)->createUserForClient($userData);
+            $user = app(UserService::class)->createUserForClient([
+                'nom' => $userData['nom'],
+                'prenom' => $userData['prenom'],
+                'login' => $userData['login'],
+                'password' => $userData['password'],
+                'photo' => $userData['photo'],
+                'photo_status' => $userData['photo_status'],
+                'client_id' => $client->id,
+            ]);
             $client->user_id = $user->id;
             $client->save();
         }

@@ -13,7 +13,7 @@ class StoreDemandeRequest extends FormRequest
     {
         return [
             "montant" => "required|numeric|min:0",
-            "etat" => "required|string",
+            "etat" => "nullable|string",
             "articles" => "required|array",
             "articles.*.id" => "required|exists:articles,id",
             "articles.*.quantity" => "required|integer|min:1",

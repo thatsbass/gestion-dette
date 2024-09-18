@@ -40,6 +40,7 @@ class ClientController extends Controller
         }
     
         $userData = $request->input("user", null);
+        // dd($userData);
         $photo = $request->file("user.photo");
     
         if ($photo) {

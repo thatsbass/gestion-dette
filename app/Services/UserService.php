@@ -28,7 +28,9 @@ class UserService
 
     public function createUserForClient(array $userData)
     {
-    
+
+        // dd($userData);
+      
         $userData['role_id'] = 3;
         if (isset($userData['photo']) && is_array($userData['photo'])) {
             $userData['photo'] = $userData['photo']['url'] ?? null;
@@ -37,6 +39,7 @@ class UserService
         try {
             $user = $this->userRepository->create($userData);
             $client = Client::findOrFail($userData['client_id']);
+            // dd($client);
             $client->user_id = $user->id;
             $client->save();
 
@@ -46,7 +49,6 @@ class UserService
             throw new Exception("Erreur lors de la création de l'utilisateur : " . $e->getMessage());
         }
     }
-
 
   
     public function getAllUsers()

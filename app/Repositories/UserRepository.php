@@ -25,11 +25,6 @@ class UserRepository implements UserRepositoryInterface
         return $user;
     }
 
-    // public function delete(User $user): void
-    // {
-    //     $user->delete();
-    // }
-
     public function getAllUsers()
     {
         return User::with('role')->get();  // Charge aussi le rôle

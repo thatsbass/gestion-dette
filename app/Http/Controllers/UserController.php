@@ -52,12 +52,6 @@ class UserController extends Controller
         return response()->json(new UserResource($user), 200);
     }
 
-    // public function index(): JsonResponse
-    // {
-    //     $users = $this->userService->getAllUsers();
-
-    //     return response()->json(new UserCollection($users), 200);
-    // }
     public function index(Request $request): JsonResponse
     {
         $role = $request->query("role");

@@ -1,0 +1,867 @@
+openapi: 3.0.0
+info:
+  title: "Jawen"
+  description: |
+   API pour le site Jawen shop
+  version: "1.0.0"
+  termsOfService: "http://127.0.0.1:3000/"
+  contact:
+    name: "Support API"
+    url: "http://127.0.0.1:3000/"
+    email: "support@example.com"
+  license:
+    name: "MIT License"
+    url: "https://opensource.org/licenses/MIT"
+
+servers:
+  - url: "http://127.0.0.1:3000/api/v1"
+    description: "Staging server"
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - "Authentification"
+      summary: "Connecter un utilisateur"
+      description: "Permet de connecter un utilisateur avec ses identifiants"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  description: "Le login de l'utilisateur"
+                password:
+                  type: string
+                  description: "Le mot de passe de l'utilisateur"
+              required:
+                - login
+                - password
+      responses:
+        '200':
+          description: "Succès de la connexion"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: "Le jeton d'authentification"
+                  Data:
+                    type: object
+                    description: "Les informations de l'utilisateur"
+        '401':
+          description: "Échec de la connexion"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "login ou mot de passe incorrect"
+
+  /auth/logout:
+    post:
+      tags:
+        - "Authentification"
+      summary: "Déconnecter un utilisateur"
+      description: "Permet de déconnecter l'utilisateur en invalidant son jeton d'authentification"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Succès de la déconnexion"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+
+
+  /users:
+    post:
+      tags:
+        - "Utilisateurs"
+      summary: "Créer un utilisateur"
+      description: "Créer un nouvel utilisateur avec des informations de base et une photo facultative"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                nom:
+                  type: string
+                  description: "Le nom de l'utilisateur"
+                prenom:
+                  type: string
+                  description: "Le prénom de l'utilisateur"
+                login:
+                  type: string
+                  description: "Le login de l'utilisateur"
+                password:
+                  type: string
+                  description: "Le mot de passe de l'utilisateur"
+                role_id:
+                  type: integer
+                  description: "L'identifiant du rôle de l'utilisateur"
+                photo:
+                  type: string
+                  format: binary
+                  description: "La photo de l'utilisateur (facultatif)"
+              required:
+                - nom
+                - prenom
+                - login
+                - password
+                - role_id
+      responses:
+        '201':
+          description: "Utilisateur créé avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResource'
+
+  /users/{id}:
+    put:
+      tags:
+        - "Utilisateurs"
+      summary: "Mettre à jour un utilisateur"
+      description: "Mettre à jour les informations d'un utilisateur existant"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: "ID de l'utilisateur"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreUserRequest'
+      responses:
+        '200':
+          description: "Utilisateur mis à jour avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResource'
+
+    get:
+      tags:
+        - "Utilisateurs"
+      summary: "Lister les utilisateurs"
+      description: "Récupérer une liste des utilisateurs avec des filtres optionnels"
+      parameters:
+        - in: query
+          name: role
+          schema:
+            type: string
+          description: "Filtrer par rôle"
+        - in: query
+          name: active
+          schema:
+            type: boolean
+          description: "Filtrer par statut d'activité"
+      responses:
+        '200':
+          description: "Liste des utilisateurs récupérée avec succès"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/UserCollection'
+                  message:
+                    type: string
+                    example: "Liste des utilisateurs"
+
+  /clients:
+    post:
+      tags:
+        - "Clients"
+      summary: "Créer un client"
+      description: "Créer un nouveau client avec des informations de base, et éventuellement un utilisateur associé"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                surnom:
+                  type: string
+                  description: "Le surnom du client"
+                adresse:
+                  type: string
+                  description: "L'adresse du client"
+                telephone:
+                  type: string
+                  description: "Le téléphone du client"
+                category_id:
+                  type: integer
+                  description: "L'identifiant de la catégorie du client"
+                max_montant:
+                  type: number
+                  description: "Le montant maximum pour le client"
+                user:
+                  type: object
+                  properties:
+                    nom:
+                      type: string
+                      description: "Le nom de l'utilisateur"
+                    prenom:
+                      type: string
+                      description: "Le prénom de l'utilisateur"
+                    login:
+                      type: string
+                      description: "Le login de l'utilisateur"
+                    password:
+                      type: string
+                      description: "Le mot de passe de l'utilisateur"
+                user.photo:
+                  type: string
+                  format: binary
+                  description: "La photo de l'utilisateur (facultatif)"
+      responses:
+        '201':
+          description: "Client créé avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResource'
+
+    get:
+      tags:
+        - "Clients"
+      summary: "Lister les clients"
+      description: "Récupérer une liste des clients avec des filtres optionnels"
+      parameters:
+        - in: query
+          name: comptes
+          schema:
+            type: boolean
+          description: "Filtrer par possession d'un compte utilisateur"
+        - in: query
+          name: active
+          schema:
+            type: boolean
+          description: "Filtrer par statut d'activité"
+      responses:
+        '200':
+          description: "Liste des clients récupérée avec succès"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/ClientCollection'
+                  message:
+                    type: string
+                    example: "Liste des clients"
+
+  /clients/{id}:
+    put:
+      tags:
+        - "Clients"
+      summary: "Mettre à jour un client"
+      description: "Mettre à jour les informations d'un client existant"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: "ID du client"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreClientRequest'
+      responses:
+        '200':
+          description: "Client mis à jour avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResource'
+
+  
+
+
+  /clients/telephone:
+    post:
+      tags:
+        - "Clients"
+      summary: "Recherche d'un client par téléphone"
+      description: "Recherche d'un client existant par son numéro de téléphone"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                telephone:
+                  type: string
+                  description: "Le numéro de téléphone du client"
+              required:
+                - telephone
+      responses:
+        '200':
+          description: "Client trouvé"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/ClientResource'
+                  message:
+                    type: string
+                    example: "Client trouvé"
+        '411':
+          description: "Client non trouvé"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 411
+                  data:
+                    type: null
+                  message:
+                    type: string
+                    example: "Client non trouvé"
+
+  /articles:
+    get:
+      summary: Get a list of all articles
+      operationId: indexArticles
+      tags:
+        - Articles
+      responses:
+        '200':
+          description: List of articles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+                  message:
+                    type: string
+                    example: ''
+    post:
+      summary: Create a new article
+      operationId: storeArticle
+      tags:
+        - Articles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreArticleRequest'
+      responses:
+        '201':
+          description: Article created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  data:
+                    $ref: '#/components/schemas/Article'
+                  message:
+                    type: string
+                    example: 'Article enregistré avec succès'
+
+  /articles/{id}:
+    get:
+      summary: Get an article by ID
+      operationId: showArticle
+      tags:
+        - Articles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Article found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/Article'
+                  message:
+                    type: string
+                    example: 'Article trouvé'
+        '411':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 411
+                  data:
+                    type: object
+                  message:
+                    type: string
+                    example: 'Objet non trouvé'
+
+    put:
+      summary: Update an article by ID
+      operationId: updateArticle
+      tags:
+        - Articles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreArticleRequest'
+      responses:
+        '200':
+          description: Article updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/Article'
+                  message:
+                    type: string
+                    example: 'Article mis à jour avec succès'
+        '411':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 411
+                  data:
+                    type: object
+                  message:
+                    type: string
+                    example: 'Objet non trouvé'
+
+    delete:
+      summary: Delete an article by ID
+      operationId: destroyArticle
+      tags:
+        - Articles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Article deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                  message:
+                    type: string
+                    example: 'Article supprimé avec succès'
+
+  /articles/libelle:
+    get:
+      summary: Get an article by its libelle
+      operationId: showArticleByLibelle
+      tags:
+        - Articles
+      parameters:
+        - name: libelle
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Article found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/Article'
+                  message:
+                    type: string
+                    example: 'Article trouvé'
+        '411':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 411
+                  data:
+                    type: object
+                  message:
+                    type: string
+                    example: 'Objet non trouvé'
+
+  /articles/{id}/stock:
+    put:
+      summary: Update the stock quantity of an article
+      operationId: updateArticleStock
+      tags:
+        - Articles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateArticleStockRequest'
+      responses:
+        '200':
+          description: Stock quantity updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/Article'
+                  message:
+                    type: string
+                    example: 'Quantité stock mise à jour'
+        '411':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 411
+                  data:
+                    type: object
+                  message:
+                    type: string
+                    example: 'Article non trouvé'
+
+  /articles/stock:
+    put:
+      summary: Update the stock quantity of multiple articles
+      operationId: updateMultipleArticleStock
+      tags:
+        - Articles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMultipleArticleStockRequest'
+      responses:
+        '200':
+          description: Stocks of multiple articles updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+                  message:
+                    type: string
+                    example: 'Stock des articles mis à jour'
+
+  
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+
+  
+  schemas:
+    UserResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nom:
+          type: string
+          example: "Doe"
+        prenom:
+          type: string
+          example: "John"
+        login:
+          type: string
+          example: "johndoe"
+        role_id:
+          type: integer
+          example: 2
+        photo:
+          type: string
+          example: "https://example.com/photo.jpg"
+        photo_status:
+          type: string
+          example: "active"
+      required:
+        - id
+        - nom
+        - prenom
+        - login
+        - role_id
+
+    UserCollection:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResource'
+
+    ClientResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        surnom:
+          type: string
+          example: "Client1"
+        adresse:
+          type: string
+          example: "123 Main St"
+        telephone:
+          type: string
+          example: "+1234567890"
+        category_id:
+          type: integer
+          example: 1
+        max_montant:
+          type: number
+          example: 1000
+        user:
+          $ref: '#/components/schemas/UserResource'
+      required:
+        - id
+        - surnom
+        - adresse
+        - telephone
+        - category_id
+
+    ClientCollection:
+      type: object
+      properties:
+        clients:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientResource'
+
+    StoreUserRequest:
+      type: object
+      properties:
+        nom:
+          type: string
+        prenom:
+          type: string
+        login:
+          type: string
+        password:
+          type: string
+        role_id:
+          type: integer
+        photo:
+          type: string
+          format: binary
+      required:
+        - nom
+        - prenom
+        - login
+        - password
+        - role_id
+
+
+    StoreClientRequest:
+      type: object
+      properties:
+        surnom:
+          type: string
+        adresse:
+          type: string
+        telephone:
+          type: string
+        category_id:
+          type: integer
+        max_montant:
+          type: number
+        user:
+          type: object
+          properties:
+            nom:
+              type: string
+            prenom:
+              type: string
+            login:
+              type: string
+            password:
+              type: string
+            role_id:
+              type: integer
+            photo:
+              type: string
+              format: binary
+      required:
+        - surnom
+        - adresse
+        - telephone
+        - category_id
+
+schemas:
+    Article:
+      type: object
+      properties:
+        id:
+          type: integer
+        libelle:
+          type: string
+        description:
+          type: string
+        prix:
+          type: number
+          format: float
+        qteStock:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    StoreArticleRequest:
+      type: object
+      properties:
+        libelle:
+          type: string
+          example: 'Article Example'
+        description:
+          type: string
+          example: 'Description of the article'
+        prix:
+          type: number
+          format: float
+          example: 100.00
+        qteStock:
+          type: integer
+          example: 10
+
+    UpdateArticleStockRequest:
+      type: object
+      properties:
+        qteStock:
+          type: integer
+          example: 20
+
+    UpdateMultipleArticleStockRequest:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              qteStock:
+                type: integer
+

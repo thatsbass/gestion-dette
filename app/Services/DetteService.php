@@ -157,4 +157,5 @@ public function addPayment(int $detteId, float $montant)
 
         return $totalDue;
     }
+    
 }

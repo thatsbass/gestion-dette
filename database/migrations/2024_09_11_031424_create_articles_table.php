@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('libelle')->unique();
             $table->integer('prix');
             $table->integer('quantite');
+            $table->integer('seuil')->default(10);
             $table->softDeletes(); 
             $table->timestamps();
         });

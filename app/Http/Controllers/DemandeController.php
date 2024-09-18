@@ -64,34 +64,45 @@ class DemandeController extends Controller
         $demandes = $this->demandeService->getAllDemandes($etat);
         return response()->json($demandes);
     }
+
+
+    public function checkDisponibilite($id): JsonResponse
+{
+    // Récupérer la demande par son ID
+    $demande = $this->demandeService->findDemandeById($id);
+    
+    if (!$demande) {
+        return response()->json(['message' => 'Demande non trouvée.'], 404);
+    }
+
+    $quantitesDisponibles = $this->demandeService->verifierQuantitesDisponibles($demande);
+
+    return response()->json($quantitesDisponibles);
+}
+
+public function validerOuAnnuler(Request $request, $id): JsonResponse
+{
+    $validatedData = $request->validate([
+        'action' => 'required|in:Valider,Annuler',
+        'motif' => 'required_if:action,Annuler|string',
+    ]);
+
+    $demande = $this->demandeService->findDemandeById($id);
+
+    if (!$demande) {
+        return response()->json(['message' => 'Demande non trouvée.'], 404);
+    }
+
+    if ($validatedData['action'] === 'Annuler') {
+        // Annuler la demande
+        $this->demandeService->annulerDemande($demande, $validatedData['motif']);
+    } else {
+        // Valider la demande
+        $this->demandeService->validerDemande($demande);
+    }
+
+    return response()->json(['message' => 'Demande traitée avec succès.']);
 }
 
 
-
-
-    // public function relance($id): JsonResponse
-    // {
-    //     $demande = $this->demandeService->findDemandeById($id);
-
-    //     if ($demande->etat !== "Annuler") {
-    //         return response()->json(
-    //             ["message" => 'La demande n\'est pas annulée.'],
-    //             400
-    //         );
-    //     }
-
-    //     // Logique pour envoyer la relance
-    //     $this->demandeService->sendRelance($demande);
-
-    //     return response()->json(["message" => "Relance envoyée."]);
-    // }
-
-    // public function notificationsClient(): JsonResponse
-    // {
-    //     $client = auth()->user()->client;
-    //     $notifications = $client
-    //         ->notifications()
-    //         ->where("type", "Relance")
-    //         ->get();
-    //     return response()->json($notifications);
-    // }
+}

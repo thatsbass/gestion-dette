@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
             $table->integer('montant');
-            $table->enum('etat', ['Encours', 'Annuler'])->default('Encours');
+            $table->enum('etat', ['Encours', 'Annuler', 'Valider'])->default('Encours');
             $table->timestamps();
         });
     }
