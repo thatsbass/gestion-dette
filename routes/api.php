@@ -149,21 +149,12 @@ Route::group(["prefix" => "v1"], function () {
     Route::middleware(["auth:api", "checkRole:Admin,Boutiquier"])->group(
         function () {
             Route::prefix("dettes")->group(function () {
-                Route::post("/", [DetteController::class, "store"]);
-                Route::get("/", [DetteController::class, "index"]);
-                Route::get("/{id}", [DetteController::class, "show"]);
-                Route::post("/{id}/paiements", [
-                    DetteController::class,
-                    "addPayment",
-                ]);
-                Route::get("/{id}/articles", [
-                    DetteController::class,
-                    "getArticles",
-                ]);
-                Route::get("/{id}/paiements", [
-                    DetteController::class,
-                    "getPayments",
-                ]);
+                Route::post("dettes", [DetteController::class, "store"]);
+                Route::get("dettes", [DetteController::class, "index"]);
+                Route::get("dettes/{id}", [DetteController::class, "show"]);
+                Route::post("dettes/{id}/paiements", [DetteController::class,"addPayment",]);
+                Route::get("dettes/{id}/articles", [DetteController::class,"getArticles",]);
+                Route::get("dettes/{id}/paiements", [DetteController::class,"getPayments",]);
             });
         }
     );

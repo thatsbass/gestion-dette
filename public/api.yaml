@@ -18,7 +18,7 @@ servers:
     description: "Staging server"
 
 paths:
-  /auth/login:
+  /login:
     post:
       tags:
         - "Authentification"
@@ -65,7 +65,7 @@ paths:
                     type: string
                     example: "login ou mot de passe incorrect"
 
-  /auth/logout:
+  /logout:
     post:
       tags:
         - "Authentification"
@@ -92,6 +92,8 @@ paths:
         - "Utilisateurs"
       summary: "Créer un utilisateur"
       description: "Créer un nouvel utilisateur avec des informations de base et une photo facultative"
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -138,6 +140,8 @@ paths:
         - "Utilisateurs"
       summary: "Mettre à jour un utilisateur"
       description: "Mettre à jour les informations d'un utilisateur existant"
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -164,6 +168,8 @@ paths:
         - "Utilisateurs"
       summary: "Lister les utilisateurs"
       description: "Récupérer une liste des utilisateurs avec des filtres optionnels"
+      security:
+        - bearerAuth: []
       parameters:
         - in: query
           name: role
@@ -198,6 +204,8 @@ paths:
         - "Clients"
       summary: "Créer un client"
       description: "Créer un nouveau client avec des informations de base, et éventuellement un utilisateur associé"
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -250,6 +258,8 @@ paths:
     get:
       tags:
         - "Clients"
+      security:
+        - bearerAuth: []
       summary: "Lister les clients"
       description: "Récupérer une liste des clients avec des filtres optionnels"
       parameters:
@@ -286,6 +296,8 @@ paths:
         - "Clients"
       summary: "Mettre à jour un client"
       description: "Mettre à jour les informations d'un client existant"
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -307,8 +319,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ClientResource'
 
-  
-
 
   /clients/telephone:
     post:
@@ -316,6 +326,8 @@ paths:
         - "Clients"
       summary: "Recherche d'un client par téléphone"
       description: "Recherche d'un client existant par son numéro de téléphone"
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -366,6 +378,8 @@ paths:
       operationId: indexArticles
       tags:
         - Articles
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: List of articles
@@ -383,12 +397,16 @@ paths:
                       $ref: '#/components/schemas/Article'
                   message:
                     type: string
+ 
                     example: ''
+                    
     post:
       summary: Create a new article
       operationId: storeArticle
       tags:
         - Articles
+      security:
+        - bearerAuth: []  
       requestBody:
         required: true
         content:
@@ -417,6 +435,9 @@ paths:
       summary: Get an article by ID
       operationId: showArticle
       tags:
+        - Articles
+      security:
+        - bearerAuth: []
         - Articles
       parameters:
         - name: id
@@ -461,6 +482,8 @@ paths:
       operationId: updateArticle
       tags:
         - Articles
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -510,6 +533,8 @@ paths:
       operationId: destroyArticle
       tags:
         - Articles
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -538,6 +563,9 @@ paths:
       summary: Get an article by its libelle
       operationId: showArticleByLibelle
       tags:
+        - Articles
+      security:
+        - bearerAuth: []
         - Articles
       parameters:
         - name: libelle
@@ -577,12 +605,15 @@ paths:
                     type: string
                     example: 'Objet non trouvé'
 
+
   /articles/{id}/stock:
     put:
       summary: Update the stock quantity of an article
       operationId: updateArticleStock
       tags:
         - Articles
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -627,12 +658,15 @@ paths:
                     type: string
                     example: 'Article non trouvé'
 
+
   /articles/stock:
     put:
       summary: Update the stock quantity of multiple articles
       operationId: updateMultipleArticleStock
       tags:
         - Articles
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -658,7 +692,208 @@ paths:
                     type: string
                     example: 'Stock des articles mis à jour'
 
-  
+  /dettes:
+    post:
+      summary: Create a new debt
+      operationId: storeDette
+      tags:
+        - Dettes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreDetteRequest'
+      responses:
+        '201':
+          description: Debt created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dette'
+        '411':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Erreur de validation'
+                  errors:
+                    type: string
+
+    get:
+      summary: Get a list of all debts
+      operationId: indexDettes
+      tags:
+        - Dettes
+      parameters:
+        - name: statut
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of debts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Dette'
+
+  /dettes/{id}:
+    get:
+      summary: Get a debt by ID
+      operationId: showDette
+      tags:
+        - Dettes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Debt found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dette'
+        '411':
+          description: Debt not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Objet non trouvé'
+
+  /dettes/{id}/paiements:
+    get:
+      summary: Get payments related to a debt
+      operationId: getPayments
+      tags:
+        - Dettes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of payments related to the debt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Paiement'
+
+  /dettes/{id}/articles:
+    get:
+      summary: Get articles related to a debt
+      operationId: getArticles
+      tags:
+        - Dettes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of articles related to the debt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+
+  /demandes:
+    get:
+      summary: Get requests related to the authenticated client
+      operationId: indexDemandes
+      tags:
+        - Dettes
+      responses:
+        '200':
+          description: List of requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Demande'
+
+  /dettes/{id}/relance:
+    post:
+      summary: Relaunch a cancelled debt request
+      operationId: relanceDette
+      tags:
+        - Dettes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        
+        '200':
+          description: Debt relaunch successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Relance envoyée'
+        '400':
+          description: Request is not cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "La demande n'est pas annulée"
+        
+  /notifications:
+    get:
+      summary: Get notifications for the authenticated client
+      operationId: notificationsClient
+      tags:
+        - Dettes
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
 
 components:
   securitySchemes:
@@ -806,7 +1041,6 @@ components:
         - telephone
         - category_id
 
-schemas:
     Article:
       type: object
       properties:
@@ -865,3 +1099,74 @@ schemas:
               qteStock:
                 type: integer
 
+    Dette:
+      type: object
+      properties:
+        id:
+          type: integer
+        montant:
+          type: number
+          format: float
+        statut:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    StoreDetteRequest:
+      type: object
+      properties:
+        montant:
+          type: number
+          format: float
+        statut:
+          type: string
+
+    AddPaymentRequest:
+      type: object
+      properties:
+        montant:
+          type: number
+          format: float
+
+    Paiement:
+      type: object
+      properties:
+        id:
+          type: integer
+        montant:
+          type: number
+          format: float
+        date:
+          type: string
+          format: date-time
+
+        Article:
+          type: object
+          properties:
+            id:
+              type: integer
+            libelle:
+              type: string
+
+    Demande:
+      type: object
+      properties:
+        id:
+          type: integer
+        etat:
+          type: string
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        date:
+          type: string
+          format: date-time

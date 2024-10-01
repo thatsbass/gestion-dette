@@ -6,7 +6,9 @@ use App\Models\ArchiveDette;
 use App\Models\Dette;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
 use Kreait\Firebase\Database;
+use Illuminate\Http\Request;
 
 class FirebaseArchiveService implements ArchiveServiceInterface
 {
@@ -34,6 +36,34 @@ class FirebaseArchiveService implements ArchiveServiceInterface
             "updated_at" => $dette->updated_at,
             "archived_at" => now(),
         ]);
+    }
+
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'idToken' => 'required|string',
+        ]);
+
+        $idToken = $request->input('idToken');
+        $googleUser = $this->verifyGoogleToken($idToken);
+
+        if (!$googleUser) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Vérifiez si l'utilisateur existe déjà dans Firestore
+        $userRef = $this->firestore->database()->collection('users')->document($googleUser['sub']);
+        $userSnapshot = $userRef->snapshot();
+
+        if (!$userSnapshot->exists()) {
+            // Créer un nouvel utilisateur dans Firestore
+            $userRef->set([
+                'name' => $googleUser['name'],
+                'email' => $googleUser['email'],
+                'google_id' => $googleUser['sub'],
+            ]);
+        }
     }
 
     public function getAll()

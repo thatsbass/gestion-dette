@@ -89,7 +89,7 @@ class DetteController extends Controller
         return response()->json($demandes);
     }
 
-    // Nouvelle méthode pour relancer une demande annulée
+   
     public function relance($id): JsonResponse
     {
         $dette = Dette::findOrFail($id);
@@ -100,8 +100,8 @@ class DetteController extends Controller
         // Envoyer la relance après 2 jours
         $dette->update(['etat' => 'En cours']);
         
-        // Logique pour envoyer une notification ou relance
-        // Exemple : NotificationService::sendRelance($dette);
+        
+        //  NotificationService::sendRelance($dette);
 
         return response()->json(['message' => 'Relance envoyée'], 200);
     }
